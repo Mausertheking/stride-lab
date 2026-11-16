@@ -1,0 +1,1820 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}</style>
+<title>Stride Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Stride Lab: ink, ivory and champagne gold. One column of step cards built for one-handed phone use. Both fonts carry Cyrillic. */
+:root{
+  --bg:#F3EFE7; --bg2:#ECE5D8; --surface:#FFFDF8; --surface2:#F4EEE3; --ink:#17140F; --muted:#6A6152; --line:#E1D7C5; --line2:#CDBFA6;
+  --gold:#9C7637; --gold-soft:#C9A867; --gold-wash:rgba(176,138,72,.10);
+  --btn:#17140F; --btn-ink:#F3E3C0;
+  --good:#2F6B47; --good-bg:#E4EFE5; --warn:#8A5A12; --warn-bg:#F6EAD2; --bad:#9E2F25; --bad-bg:#F6E1DC;
+  --video-bg:#0B0A08;
+  --shadow:0 1px 0 rgba(255,255,255,.7) inset,0 18px 40px -28px rgba(40,28,10,.35);
+  --f-display:'Cormorant Garamond','Iowan Old Style',Georgia,serif;
+  --f-body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B0A08; --bg2:#12100C; --surface:#15130F; --surface2:#1D1A15; --ink:#F2ECE1; --muted:#A69C8B; --line:#2C2720; --line2:#40382C;
+    --gold:#D8B97E; --gold-soft:#B8975A; --gold-wash:rgba(216,185,126,.08);
+    --btn:#D8B97E; --btn-ink:#15110A;
+    --good:#7CC59A; --good-bg:#16271C; --warn:#E3B566; --warn-bg:#2E2412; --bad:#EE8F83; --bad-bg:#341815;
+    --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 24px 50px -30px rgba(0,0,0,.8);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B0A08; --bg2:#12100C; --surface:#15130F; --surface2:#1D1A15; --ink:#F2ECE1; --muted:#A69C8B; --line:#2C2720; --line2:#40382C;
+  --gold:#D8B97E; --gold-soft:#B8975A; --gold-wash:rgba(216,185,126,.08);
+  --btn:#D8B97E; --btn-ink:#15110A;
+  --good:#7CC59A; --good-bg:#16271C; --warn:#E3B566; --warn-bg:#2E2412; --bad:#EE8F83; --bad-bg:#341815;
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 24px 50px -30px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background:radial-gradient(120% 60% at 50% -10%,var(--bg2),var(--bg) 60%) fixed,var(--bg);
+  color:var(--ink); font:400 16px/1.55 var(--f-body);
+  padding-block:28px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.page{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;text-wrap:balance;font-weight:600}
+h1{font-size:clamp(2.8rem,9vw,4.2rem);line-height:.9;letter-spacing:-.01em}
+h1 em{font-style:italic;font-weight:500;color:var(--gold)}
+h2{font-size:clamp(1.7rem,5vw,2.1rem);line-height:1.05}
+h3{font-size:1.35rem;line-height:1.1}
+h4{font-size:1.2rem;line-height:1.15}
+p{margin:0}
+.muted{color:var(--muted);font-size:.9rem}
+.num{font-variant-numeric:tabular-nums lining-nums}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+a{color:var(--gold);text-underline-offset:3px}
+
+/* header */
+.top{padding:6px 2px 4px;display:flex;flex-direction:column;gap:14px}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font:600 .72rem/1 var(--f-body);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.mono{width:34px;height:34px;border-radius:50%;border:1px solid var(--gold-soft);display:grid;place-items:center;font:600 italic 1.05rem/1 var(--f-display);letter-spacing:0;color:var(--gold);text-transform:none}
+.lede{color:var(--muted);max-width:58ch;font-size:1.02rem}
+.specs{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.specs li{font:600 .72rem/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);padding:8px 12px;border:1px solid var(--line2);border-radius:999px;background:var(--surface)}
+.specs li::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold);margin-right:8px;vertical-align:2px}
+.lanes{height:7px;border-top:1px solid var(--gold-soft);border-bottom:1px solid var(--gold-soft);opacity:.8}
+
+/* cards */
+.card{
+  position:relative;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px 20px;
+  display:flex;flex-direction:column;gap:16px;min-width:0;box-shadow:var(--shadow);
+}
+.card::before{content:'';position:absolute;left:20px;right:20px;top:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-soft),transparent);opacity:.9}
+.eyebrow{display:flex;align-items:center;gap:10px;font:700 .7rem/1 var(--f-body);letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+.eyebrow::after{content:'';flex:1;height:1px;background:var(--line)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* controls */
+.btn{
+  font:600 .9rem/1.1 var(--f-body); letter-spacing:.01em; min-height:44px; padding:0 18px; border-radius:999px;
+  border:1px solid var(--line2); background:var(--surface); color:var(--ink); cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,border-color .15s,transform .1s;
+}
+.btn:hover:not(:disabled){border-color:var(--gold-soft)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn.primary{background:var(--btn);border-color:var(--btn);color:var(--btn-ink)}
+.btn.gold{background:linear-gradient(180deg,#E2C68C,#C49E5A);border-color:#B48D4B;color:#1A140A}
+.btn.lg{min-height:52px;padding:0 22px;font-size:.98rem}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn .spark{font-size:1rem;line-height:1}
+.btn:focus-visible,.seg button:focus-visible,select:focus-visible,input:focus-visible,.link:focus-visible,summary:focus-visible,a:focus-visible,label.btn:focus-within{outline:2px solid var(--gold);outline-offset:3px}
+.link{background:none;border:0;padding:6px 0;color:var(--gold);font:700 .82rem var(--f-body);letter-spacing:.02em;cursor:pointer}
+.setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.field>span,.field>label,.lbl{font:700 .68rem/1.2 var(--f-body);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.seg{display:flex;border:1px solid var(--line2);border-radius:999px;overflow:hidden;background:var(--surface2);padding:3px;gap:3px}
+.seg button{flex:1;min-height:38px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:500 .86rem/1.15 var(--f-body);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);font-weight:700}
+.langseg{flex:none;width:auto}
+.langseg button{min-width:44px;flex:none;min-height:32px;font-size:.78rem;letter-spacing:.08em}
+select,input[type=password],input[type=text]{min-height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--surface2);color:var(--ink);font:500 .92rem var(--f-body);padding:0 12px;min-width:0}
+input[type=password],input[type=text]{flex:1 1 200px}
+.tick{display:flex;gap:10px;align-items:flex-start;font-size:.92rem;cursor:pointer}
+.tick input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--gold);flex:none}
+.tips{margin:0;padding:0;list-style:none;color:var(--muted);font-size:.9rem;display:flex;flex-direction:column;gap:6px}
+.tips li{padding-left:18px;position:relative}
+.tips li::before{content:'';position:absolute;left:2px;top:.62em;width:8px;height:1px;background:var(--gold)}
+
+/* Gemini panel */
+.gem{border:1px solid var(--line2);border-radius:16px;background:linear-gradient(180deg,var(--gold-wash),transparent 70%);padding:0 16px}
+.gem summary{min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;font:600 1.3rem var(--f-display)}
+.gem summary::-webkit-details-marker{display:none}
+.gem summary .g{display:flex;align-items:center;gap:10px}
+.gem summary .g::before{content:'✦';font-size:1rem;color:var(--gold)}
+.gem[open] summary{border-bottom:1px solid var(--line)}
+.gembody{display:flex;flex-direction:column;gap:14px;padding:14px 0 16px}
+
+/* stage */
+.stage{background:var(--video-bg);border-radius:16px;overflow:hidden;min-height:200px;display:grid;place-items:center;position:relative;box-shadow:0 0 0 1px rgba(216,185,126,.18) inset}
+.stage canvas{display:block;width:auto;height:auto;max-width:100%;max-height:68vh;touch-action:none;cursor:crosshair}
+.stage.busy canvas{pointer-events:none}
+.stage .empty{color:#B9AE9A;padding:40px 22px;text-align:center;max-width:36ch;font-size:.95rem}
+#video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.mstat{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;padding:10px 14px;border-radius:12px;background:var(--surface2);color:var(--muted)}
+.mstat i{flex:none;width:8px;height:8px;border-radius:50%;margin-top:7px;background:var(--muted)}
+.mstat[data-s="ready"] i,.mstat[data-s="found"] i{background:var(--good)}
+.mstat[data-s="gem"] i{background:var(--gold);box-shadow:0 0 0 3px var(--gold-wash)}
+.mstat[data-s="none"] i{background:var(--warn)}
+.mstat[data-s="failed"] i{background:var(--bad)}
+.mstat[data-s="loading"] i{background:var(--gold)}
+.autobar{display:flex;gap:10px;flex-wrap:wrap}
+.autobar .btn{flex:1 1 220px}
+.prog{border:1px solid var(--line2);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;background:var(--surface2)}
+.prog-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;font-size:.9rem}
+.prog[data-tone="good"]{border-color:color-mix(in srgb,var(--good) 40%,var(--line2))}
+.prog[data-tone="warn"]{border-color:color-mix(in srgb,var(--warn) 45%,var(--line2))}
+.prog[data-tone="bad"]{border-color:color-mix(in srgb,var(--bad) 45%,var(--line2))}
+.track{height:4px;border-radius:4px;background:var(--line);overflow:hidden;position:relative}
+.track i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--gold-soft),var(--gold));border-radius:4px;transition:width .2s}
+.track.ind i{width:30%;animation:ind 1.2s ease-in-out infinite}
+@keyframes ind{0%{left:-30%}100%{left:100%}}
+.transport{display:flex;gap:6px;flex-wrap:wrap}
+.transport .btn{flex:1 1 56px;padding:0 8px}
+input[type=range]{width:100%;accent-color:var(--gold);height:32px;margin:0}
+.readout{display:flex;justify-content:space-between;gap:10px;font-size:.88rem;color:var(--muted);flex-wrap:wrap}
+.readout b{color:var(--ink);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:0}
+.chips li{display:flex;gap:7px;align-items:center;padding:5px 12px 5px 5px;border-radius:999px;border:1px solid var(--line);font-size:.84rem;color:var(--muted)}
+.chips li span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--surface2);font-size:.74rem;font-weight:700}
+.chips li.done{color:var(--ink);background:var(--surface2)}
+.chips li.done span{background:var(--btn);color:var(--btn-ink)}
+.chips li.next{border-color:var(--gold-soft);color:var(--ink);font-weight:600}
+.hint{font-size:.94rem}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;margin:0}
+.metrics div{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+.metrics dt{font:700 .64rem/1.2 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.metrics dd{margin:4px 0 0;font:600 1.75rem/1 var(--f-display);font-variant-numeric:tabular-nums lining-nums}
+.metrics dd small{font:500 .78rem var(--f-body);color:var(--muted);margin-left:2px}
+
+/* kinogram */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.pose{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+.imgwrap{position:relative;border-radius:14px;overflow:hidden;background:var(--video-bg);aspect-ratio:3/4;box-shadow:0 0 0 1px rgba(216,185,126,.2) inset}
+.imgwrap img{display:block;width:100%;height:100%;object-fit:cover}
+.tag{position:absolute;left:8px;top:8px;width:fit-content;max-width:calc(100% - 16px);background:rgba(11,10,8,.78);color:#F2E4C4;font:700 .64rem/1.1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;padding:6px 8px;border-radius:999px;border:1px solid rgba(216,185,126,.35)}
+.src{position:absolute;right:8px;bottom:8px;background:rgba(11,10,8,.72);color:#D8B97E;font:600 .62rem/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;padding:5px 7px;border-radius:999px}
+.pose .row{justify-content:space-between;gap:6px}
+.mini{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;margin:0;font-size:.84rem}
+.mini div{display:flex;justify-content:space-between;gap:6px;min-width:0;border-bottom:1px dotted var(--line);padding-bottom:3px}
+.mini dt{color:var(--muted)}
+.mini dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.empty-note{background:var(--surface2);border:1px dashed var(--line2);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+
+/* report */
+.summary{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.summary .big{font:600 3.2rem/1 var(--f-display);font-variant-numeric:lining-nums tabular-nums}
+.group{display:flex;flex-direction:column;gap:12px}
+.check{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0;background:var(--surface)}
+.check header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.pill{flex:none;font:700 .68rem/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border-radius:999px}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.pill.ok{background:var(--warn-bg);color:var(--warn)}
+.pill.work{background:var(--bad-bg);color:var(--bad)}
+.pill.on{background:var(--good-bg);color:var(--good)}
+.pill.off{background:var(--surface2);color:var(--muted);border:1px solid var(--line2)}
+.check .ctx{font-size:.8rem;color:var(--muted)}
+.check .cue{font-size:.95rem}
+.check .drill{font-size:.88rem;color:var(--muted)}
+.rhythm{display:flex;flex-direction:column;gap:10px}
+
+/* coach */
+.coach{border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px;
+  background:linear-gradient(160deg,#1B1813,#0E0C09);color:#EFE7D8;border:1px solid rgba(216,185,126,.28)}
+.coach h3{color:#F4E6C6;display:flex;align-items:center;gap:10px}
+.coach h3::before{content:'✦';font-size:1rem;color:#D8B97E}
+.coach .muted{color:#ADA290}
+.coach .lbl{color:#C9AE78}
+.coach .quote{font:500 italic 1.35rem/1.35 var(--f-display);color:#F7EEDC}
+.coach ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:p}
+.coach ol li{counter-increment:p;border:1px solid rgba(216,185,126,.2);border-radius:14px;padding:12px 14px 12px 50px;position:relative;background:rgba(255,255,255,.02)}
+.coach ol li::before{content:counter(p);position:absolute;left:14px;top:12px;width:24px;height:24px;border-radius:50%;border:1px solid #D8B97E;color:#D8B97E;display:grid;place-items:center;font:600 .9rem/1 var(--f-display)}
+.coach ol b{display:block;font:600 1.15rem/1.2 var(--f-display);color:#F4E6C6;margin-bottom:4px}
+.coach ol p{font-size:.92rem}
+.coach ol p+p{margin-top:4px}
+.coach ul{margin:0;padding-left:18px;font-size:.92rem;display:flex;flex-direction:column;gap:4px}
+.coach .btn{border-color:rgba(216,185,126,.4);background:transparent;color:#F2E4C4}
+.coach .btn.gold{background:linear-gradient(180deg,#E2C68C,#C49E5A);color:#1A140A;border-color:#B48D4B}
+.coach .err{color:#F0A397;font-size:.9rem}
+
+details.ref{border:1px solid var(--line);border-radius:14px;padding:0 14px}
+details.ref summary{min-height:52px;display:flex;align-items:center;cursor:pointer;font:600 1.25rem var(--f-display)}
+details.ref[open] summary{border-bottom:1px solid var(--line)}
+details.ref ul{margin:0;padding:12px 0 14px 18px;display:flex;flex-direction:column;gap:8px;font-size:.94rem}
+#toast{
+  position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));
+  bottom:calc(16px + env(safe-area-inset-bottom,0px));margin:0 auto;max-width:420px;z-index:20;
+  background:#15130F;color:#F2E4C4;border:1px solid rgba(216,185,126,.35);border-radius:14px;padding:12px 16px;font-size:.9rem;
+  opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .2s,transform .2s;
+}
+#toast.show{opacity:1;transform:none}
+.foot{font-size:.82rem;color:var(--muted);padding:0 2px;text-align:center;max-width:62ch;margin:6px auto 0}
+@media (max-width:480px){ .card{padding:18px 14px;border-radius:18px} .coach{padding:16px 14px} }
+@media (prefers-reduced-motion:reduce){#toast,.track i{transition:none}.track.ind i{animation:none;width:100%;opacity:.5}}
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="top">
+    <div class="toprow">
+      <div class="brand"><span class="mono" aria-hidden="true">S</span><span data-i18n="brandSub"></span></div>
+      <div class="seg langseg" data-key="lang" role="group" data-aria="langAria">
+        <button type="button" data-v="en" aria-pressed="true">EN</button>
+        <button type="button" data-v="ru" aria-pressed="false">RU</button>
+      </div>
+    </div>
+    <h1>Stride <em>Lab</em></h1>
+    <p class="lede" data-i18n="lede"></p>
+    <ul class="specs"><li data-i18n="spec1"></li><li data-i18n="spec2"></li><li data-i18n="spec3"></li></ul>
+    <div class="lanes" aria-hidden="true"></div>
+  </header>
+
+  <section class="card" id="s-video" aria-labelledby="h-video">
+    <div class="eyebrow" data-i18n="eb1"></div>
+    <h2 id="h-video" data-i18n="hVideo"></h2>
+    <div class="row">
+      <input id="file" class="vh" type="file" accept="video/*">
+      <label class="btn primary lg" for="file" data-i18n="choose"></label>
+      <span id="fname" class="muted"></span>
+    </div>
+
+    <details class="gem" id="gem-box">
+      <summary><span class="g" data-i18n="gTitle"></span><span class="pill off" id="gem-pill"></span></summary>
+      <div class="gembody">
+        <p class="muted" data-i18n="gIntro"></p>
+        <div class="field">
+          <label for="gem-key" data-i18n="gKey"></label>
+          <div class="row">
+            <input id="gem-key" type="password" autocomplete="off" spellcheck="false" data-ph="gKeyPh">
+            <button class="btn primary" type="button" id="gem-save" data-i18n="gSave"></button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="gem-model" data-i18n="gModel"></label>
+          <select id="gem-model">
+            <option value="gemini-flash-lite-latest" data-i18n="gmLite"></option>
+            <option value="gemini-flash-latest" data-i18n="gmFlash"></option>
+          </select>
+        </div>
+        <p class="muted" data-i18n="gCost"></p>
+        <div class="row">
+          <button class="btn" type="button" id="gem-test" data-i18n="gTest"></button>
+          <button class="link" type="button" id="gem-forget" data-i18n="gForget"></button>
+          <span class="muted" id="gem-msg" role="status"></span>
+        </div>
+        <p class="muted"><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="gGet"></a> · <span data-i18n="gPriv"></span></p>
+      </div>
+    </details>
+
+    <div class="setup">
+      <div class="field">
+        <span id="l-leg" data-i18n="lLeg"></span>
+        <div class="seg" data-key="side" role="group" aria-labelledby="l-leg">
+          <button type="button" data-v="auto" aria-pressed="true" data-i18n="legAuto"></button>
+          <button type="button" data-v="left" aria-pressed="false" data-i18n="legL"></button>
+          <button type="button" data-v="right" aria-pressed="false" data-i18n="legR"></button>
+        </div>
+      </div>
+      <div class="field">
+        <span id="l-dir" data-i18n="lDir"></span>
+        <div class="seg" data-key="dir" role="group" aria-labelledby="l-dir">
+          <button type="button" data-v="auto" aria-pressed="true" data-i18n="dirAuto"></button>
+          <button type="button" data-v="1" aria-pressed="false" data-i18n="dirR"></button>
+          <button type="button" data-v="-1" aria-pressed="false" data-i18n="dirL"></button>
+        </div>
+      </div>
+      <div class="field">
+        <span id="l-phase" data-i18n="lPhase"></span>
+        <div class="seg" data-key="phase" role="group" aria-labelledby="l-phase">
+          <button type="button" data-v="auto" aria-pressed="true" data-i18n="phAuto"></button>
+          <button type="button" data-v="top" aria-pressed="false" data-i18n="phTop"></button>
+          <button type="button" data-v="accel" aria-pressed="false" data-i18n="phAcc"></button>
+        </div>
+        <span class="muted" id="phase-auto"></span>
+      </div>
+      <div class="field">
+        <label for="fps" data-i18n="lFps"></label>
+        <select id="fps">
+          <option value="auto" data-i18n="fpsAuto" selected></option>
+          <option value="24">24 fps</option>
+          <option value="25">25 fps</option>
+          <option value="30">30 fps</option>
+          <option value="50">50 fps</option>
+          <option value="60">60 fps</option>
+          <option value="120">120 fps</option>
+          <option value="240">240 fps</option>
+        </select>
+        <span class="muted" id="fps-note"></span>
+      </div>
+      <div class="field">
+        <span id="l-slow" data-i18n="lSlow"></span>
+        <div class="seg" data-key="slow" role="group" aria-labelledby="l-slow">
+          <button type="button" data-v="1" aria-pressed="true" data-i18n="slow1"></button>
+          <button type="button" data-v="4" aria-pressed="false">4×</button>
+          <button type="button" data-v="8" aria-pressed="false">8×</button>
+        </div>
+      </div>
+    </div>
+    <label class="tick"><input type="checkbox" id="autorun" checked><span data-i18n="autoRunLbl"></span></label>
+    <ul class="tips">
+      <li data-i18n="tip1"></li>
+      <li data-i18n="tip2"></li>
+      <li data-i18n="tip3"></li>
+      <li data-i18n="tip5"></li>
+    </ul>
+  </section>
+
+  <section class="card" id="s-mark" aria-labelledby="h-mark">
+    <div class="eyebrow" data-i18n="eb2"></div>
+    <h2 id="h-mark" data-i18n="hMark"></h2>
+    <div class="mstat" id="mstat" data-s="loading"><i aria-hidden="true"></i><span id="mstat-t"></span></div>
+    <div class="autobar">
+      <button class="btn gold lg" type="button" id="auto" disabled><span class="spark" aria-hidden="true">✦</span><span data-i18n="autoBtn"></span></button>
+      <button class="btn lg" type="button" id="gemFrame" disabled data-i18n="gemFrameBtn"></button>
+    </div>
+    <div class="prog" id="prog" hidden data-tone="">
+      <div class="prog-top"><span id="prog-t" role="status" aria-live="polite"></span><button class="link" type="button" id="prog-x" data-i18n="cancel"></button></div>
+      <div class="track" id="prog-track"><i id="prog-bar"></i></div>
+    </div>
+    <div class="stage" id="stage">
+      <div class="empty" id="empty" data-i18n="empty"></div>
+      <video id="video" muted playsinline preload="auto"></video>
+      <canvas id="canvas" hidden data-aria="canvasAria"></canvas>
+    </div>
+    <div>
+      <input id="slider" type="range" min="0" max="1" step="0.0333" value="0" data-aria="sliderAria" data-needs disabled>
+      <div class="readout"><span id="tread" class="num"></span><span id="dur" class="num"></span></div>
+    </div>
+    <div class="transport">
+      <button class="btn" type="button" data-step="-10" data-needs disabled data-aria="back10">−10</button>
+      <button class="btn" type="button" data-step="-1" data-needs disabled data-aria="back1">−1</button>
+      <button class="btn" type="button" id="play" data-needs disabled></button>
+      <button class="btn" type="button" data-step="1" data-needs disabled data-aria="fwd1">+1</button>
+      <button class="btn" type="button" data-step="10" data-needs disabled data-aria="fwd10">+10</button>
+    </div>
+    <div class="field">
+      <span id="l-speed" data-i18n="lSpeed"></span>
+      <div class="seg" data-key="speed" role="group" aria-labelledby="l-speed">
+        <button type="button" data-v="0.25" aria-pressed="false">0.25×</button>
+        <button type="button" data-v="0.5" aria-pressed="true">0.5×</button>
+        <button type="button" data-v="1" aria-pressed="false">1×</button>
+      </div>
+    </div>
+
+    <h3 data-i18n="hJoints"></h3>
+    <ol class="chips" id="chips"></ol>
+    <p class="hint" id="hint"></p>
+    <dl class="metrics" id="live"></dl>
+
+    <div class="field">
+      <span id="l-label" data-i18n="lLabel"></span>
+      <div class="seg" data-key="label" role="group" aria-labelledby="l-label">
+        <button type="button" data-v="Touchdown" aria-pressed="true" data-i18n="lab.Touchdown"></button>
+        <button type="button" data-v="Toe-off" aria-pressed="false" data-i18n="lab.Toe-off"></button>
+        <button type="button" data-v="Knee drive" aria-pressed="false" data-i18n="lab.Knee drive"></button>
+        <button type="button" data-v="Other" aria-pressed="false" data-i18n="lab.Other"></button>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn primary" type="button" id="save" disabled data-i18n="save"></button>
+      <button class="btn" type="button" id="undo" data-i18n="undo"></button>
+      <button class="btn" type="button" id="clear" data-i18n="clear"></button>
+    </div>
+  </section>
+
+  <section class="card" id="s-kino" aria-labelledby="h-kino">
+    <div class="eyebrow" data-i18n="eb3"></div>
+    <h2 id="h-kino" data-i18n="hKino"></h2>
+    <div class="empty-note" id="kino-empty">
+      <p data-i18n="kinoEmpty"></p>
+      <button class="btn js-demo" type="button" data-i18n="demoBtn"></button>
+    </div>
+    <div class="grid" id="kino-grid"></div>
+  </section>
+
+  <section class="card" id="s-report" aria-labelledby="h-report">
+    <div class="eyebrow" data-i18n="eb4"></div>
+    <h2 id="h-report" data-i18n="hReport"></h2>
+    <div class="coach" id="coach" hidden></div>
+    <div id="rhythm" class="rhythm" hidden></div>
+    <div id="report"></div>
+  </section>
+
+  <section class="card" id="s-altis" aria-labelledby="h-altis">
+    <div class="eyebrow" data-i18n="ebRef"></div>
+    <h2 id="h-altis" data-i18n="hAltis"></h2>
+    <p class="muted" data-i18n="altisIntro"></p>
+    <details class="ref">
+      <summary data-i18n="a.ph"></summary>
+      <ul>
+        <li data-i18n="a.p1"></li><li data-i18n="a.p2"></li><li data-i18n="a.p3"></li>
+        <li data-i18n="a.p4"></li><li data-i18n="a.p5"></li><li data-i18n="a.p6"></li>
+      </ul>
+    </details>
+    <details class="ref">
+      <summary data-i18n="a.kh"></summary>
+      <ul>
+        <li data-i18n="a.k1"></li><li data-i18n="a.k2"></li><li data-i18n="a.k3"></li>
+        <li data-i18n="a.k4"></li><li data-i18n="a.k5"></li><li data-i18n="a.k6"></li>
+      </ul>
+    </details>
+    <details class="ref">
+      <summary data-i18n="a.fh"></summary>
+      <ul>
+        <li data-i18n="a.f1"></li><li data-i18n="a.f2"></li><li data-i18n="a.f3"></li><li data-i18n="a.f4"></li>
+      </ul>
+    </details>
+    <p class="muted"><a href="https://simplifaster.com/articles/altis-kinogram-method/" target="_blank" rel="noopener" data-i18n="a.link"></a></p>
+    <p class="muted" data-i18n="a.note"></p>
+  </section>
+
+  <p class="foot" data-i18n="footnote"></p>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+
+/* ---------- translations: key -> [English, Russian] ---------- */
+const D={
+  langAria:['Language','Язык'],
+  brandSub:['Sprint kinematics studio','Студия кинематики спринта'],
+  lede:['Film a sprint from the side. Stride Lab finds the key frames, Gemini places every joint, and the app measures the angles and writes a technique report with cues and drills.','Снимите спринт сбоку. Stride Lab находит ключевые кадры, Gemini ставит каждый сустав, а приложение измеряет углы и пишет отчёт о технике с подсказками и упражнениями.'],
+  spec1:['On-device pose tracking','Трекинг позы на устройстве'], spec2:['Gemini joint finder','Поиск суставов Gemini'], spec3:['ALTIS-based checks','Проверки по ALTIS'],
+  eb1:['Step 1 of 4','Шаг 1 из 4'], eb2:['Step 2 of 4','Шаг 2 из 4'], eb3:['Step 3 of 4','Шаг 3 из 4'], eb4:['Step 4 of 4','Шаг 4 из 4'], ebRef:['Reference','Справка'],
+  hVideo:['Video and setup','Видео и настройки'],
+  choose:['Choose video','Выбрать видео'], noVideo:['No video selected','Видео не выбрано'],
+  lLeg:['Leg to track','Какую ногу отслеживать'], legAuto:['Auto','Авто'], legL:['Left','Левая'], legR:['Right','Правая'],
+  sL:['L','Л'], sR:['R','П'],
+  lDir:['Running direction','Направление бега'], dirAuto:['Auto','Авто'], dirR:['Left to right','Слева направо'], dirL:['Right to left','Справа налево'],
+  lPhase:['Phase of the run','Фаза бега'], phAuto:['Auto','Авто'], phTop:['Top speed','Макс. скорость'], phAcc:['Acceleration','Разгон'],
+  phaseAutoIs:[v=>'Auto picked: '+v,v=>'Выбрано автоматически: '+v],
+  lFps:['Video frame rate','Частота кадров видео'],
+  fpsAuto:['Auto-detect','Определить автоматически'],
+  fpsDetected:[v=>'Detected: '+v+' fps',v=>'Определено: '+v+' кадр/с'],
+  fpsGuess:['Could not read the frame rate, using 30 fps. Pick it by hand if you know it.','Не удалось определить частоту, используется 30 кадр/с. Выберите вручную, если знаете.'],
+  lSlow:['Clip speed','Скорость клипа'], slow1:['Real time','Реальное время'],
+  autoRunLbl:['Start the automatic analysis as soon as a video loads','Запускать автоматический анализ сразу после загрузки видео'],
+  tip1:['Film from the side at hip height with the camera still and level.','Снимайте сбоку на уровне таза. Камера неподвижна и держится ровно.'],
+  tip2:['Keep the whole body and the ground in frame. Use 60 fps or more when you can.','В кадре должны быть всё тело и земля. Если можно, снимайте от 60 кадр/с.'],
+  tip3:['Everything is automatic. If a point is off, drag it, or pick the leg by hand.','Всё работает автоматически. Если точка стоит неточно, перетащите её или выберите ногу вручную.'],
+  tip5:['If your phone saved slow motion that plays slowed down, set Clip speed so the times are real.','Если телефон сохранил слоу-мо, которое воспроизводится замедленно, укажите скорость клипа, чтобы время было реальным.'],
+
+  gTitle:['Gemini AI','Gemini AI'], gOn:['On','Вкл'], gOff:['Off','Выкл'],
+  gIntro:['Gemini looks at each key frame, places the shoulder, hip, knee, ankle and toe, and writes the coach notes. The angles are then measured from its points. Paste a Gemini API key to turn it on.','Gemini смотрит на каждый ключевой кадр, ставит плечо, бедро, колено, голеностоп и носок и пишет заметки тренера. Углы измеряются по его точкам. Вставьте ключ Gemini API, чтобы включить.'],
+  gKey:['Gemini API key','Ключ Gemini API'], gKeyPh:['Paste your key','Вставьте ключ'], gSave:['Save','Сохранить'],
+  gModel:['Model','Модель'], gmLite:['Flash-Lite · cheapest (recommended)','Flash-Lite · самая дешёвая (рекомендуется)'], gmFlash:['Flash · a little more precise','Flash · чуть точнее'],
+  gCost:['Low cost: about 1,300 tokens per frame with Flash-Lite. A full analysis uses about 8 calls.','Недорого: около 1 300 токенов на кадр с Flash-Lite. Полный анализ это примерно 8 запросов.'],
+  gGet:['Get a key in Google AI Studio','Получить ключ в Google AI Studio'],
+  gPriv:['The key is kept only in this browser and sent only to Google.','Ключ хранится только в этом браузере и отправляется только в Google.'],
+  gTest:['Test key','Проверить ключ'], gForget:['Remove key','Удалить ключ'], gTesting:['Testing…','Проверяю…'],
+  gOk:['The key works.','Ключ работает.'], gSaved:['Key saved.','Ключ сохранён.'], gRemoved:['Key removed.','Ключ удалён.'],
+  gBad:[v=>'Gemini error: '+v,v=>'Ошибка Gemini: '+v],
+  gNoKey:['Add a Gemini API key in Step 1 to use this.','Добавьте ключ Gemini API в шаге 1, чтобы пользоваться этим.'],
+
+  hMark:['Find the key frames','Ключевые кадры'],
+  autoBtn:['Analyze automatically','Анализировать автоматически'],
+  gemFrameBtn:['Find joints on this frame with Gemini','Найти суставы на этом кадре с Gemini'],
+  cancel:['Cancel','Отмена'],
+  pFps:['Reading the frame rate…','Определяю частоту кадров…'],
+  pScan:[(a,b)=>'Tracking the athlete: frame '+a+' of '+b,(a,b)=>'Отслеживаю спортсмена: кадр '+a+' из '+b],
+  pEvents:['Finding touchdowns, toe-offs and knee drives…','Ищу касания, отталкивания и подъёмы колена…'],
+  pGemFrames:['Gemini is looking for the key frames…','Gemini ищет ключевые кадры…'],
+  pGem:[(a,b)=>'Gemini is placing the joints: frame '+a+' of '+b,(a,b)=>'Gemini ставит суставы: кадр '+a+' из '+b],
+  pCoach:['Gemini is writing the coach notes…','Gemini пишет заметки тренера…'],
+  pDone:[n=>'Done. '+n+' key frames measured.',n=>'Готово. Измерено ключевых кадров: '+n+'.'],
+  pNoSteps:['No clear ground contacts were found. Check that the feet and the ground are in view, or mark the frames by hand.','Чёткие касания земли не найдены. Проверьте, что стопы и земля видны в кадре, или отметьте кадры вручную.'],
+  pNoModel:['Automatic analysis needs the pose model or a Gemini key.','Для автоанализа нужна модель позы или ключ Gemini.'],
+  pCancelled:['Analysis cancelled.','Анализ отменён.'],
+  pGemFail:[v=>'Gemini could not place some joints ('+v+'), so the pose model points were used there.',v=>'Gemini не смог поставить часть суставов ('+v+'), там использованы точки модели позы.'],
+  pLong:[n=>'Long video: every '+n+'th frame was checked. Trim the clip to the run for sharper timing.',n=>'Длинное видео: проверен каждый '+n+'-й кадр. Обрежьте клип до забега для точного времени.'],
+
+  mLoad:['Loading the pose model. This needs the internet and takes a few seconds the first time.','Загружаю модель распознавания позы. Нужен интернет, в первый раз это займёт несколько секунд.'],
+  mReady:['Pose model is ready. Choose a video to start.','Модель готова. Выберите видео, чтобы начать.'],
+  mFound:['Joints found automatically. Drag any point to correct it.','Суставы найдены автоматически. Перетащите любую точку, чтобы поправить её.'],
+  mGem:['Gemini placed these joints. Drag any point to correct it.','Эти суставы поставил Gemini. Перетащите любую точку, чтобы поправить её.'],
+  mNone:['No person found in this frame. Try another frame, ask Gemini, or tap to place the joints by hand.','На этом кадре человек не найден. Попробуйте другой кадр, спросите Gemini или поставьте суставы вручную.'],
+  mFail:['The on-device pose model could not start here. Gemini can still find the frames and joints, or you can mark them by hand.','Модель позы на устройстве здесь не запустилась. Gemini всё равно может найти кадры и суставы, или отметьте их вручную.'],
+  gemNone:['Gemini did not find an athlete in this frame.','Gemini не нашёл спортсмена на этом кадре.'],
+  gemPlaced:[l=>'Gemini placed the joints. It reads this frame as: '+l,l=>'Gemini поставил суставы. Он считает этот кадр: '+l],
+  empty:['Choose a video above. The analysis starts on its own, or scrub to a frame and ask Gemini to place the joints.','Выберите видео выше. Анализ начнётся сам, или найдите нужный кадр и попросите Gemini поставить суставы.'],
+  canvasAria:['Video frame with detected joints. Drag a point to correct it.','Кадр видео с найденными суставами. Перетащите точку, чтобы поправить её.'],
+  sliderAria:['Video position','Позиция видео'],
+  back10:['Back 10 frames','Назад на 10 кадров'], back1:['Back 1 frame','Назад на 1 кадр'],
+  fwd1:['Forward 1 frame','Вперёд на 1 кадр'], fwd10:['Forward 10 frames','Вперёд на 10 кадров'],
+  play:['Play','Пуск'], pause:['Pause','Пауза'],
+  lSpeed:['Playback speed','Скорость воспроизведения'],
+  hJoints:['Joints','Суставы'],
+  j0:['Shoulder','Плечо'], j1:['Hip','Бедро'], j2:['Knee','Колено'], j3:['Ankle','Голеностоп'], j4:['Toe','Носок'],
+  jh0:['top of the arm, at the shoulder joint','верх руки, плечевой сустав'],
+  jh1:['side of the hip, where the thigh meets the pelvis','бок таза, где бедро соединяется с тазом'],
+  jh2:['center of the knee','центр колена'], jh3:['the ankle bone','лодыжка'], jh4:['the ball of the foot','подушечка стопы'],
+  hintNone:['Choose a video to begin.','Выберите видео, чтобы начать.'],
+  hintPlace:[(j,h)=>'Press the '+j+' ('+h+'), slide to the exact spot using the zoom window, then release.',(j,h)=>'Нажмите на сустав: '+j+' ('+h+'). Уточните положение по окошку с увеличением и отпустите палец.'],
+  hintDone:['All five joints are set. Press and drag any point to fine-tune it, then save the pose.','Все пять суставов на месте. Нажмите и потяните любую точку, чтобы поправить её, затем сохраните позу.'],
+  'm.lean':['Trunk lean','Наклон корпуса'], 'm.thigh':['Thigh','Бедро'], 'm.knee':['Knee','Колено'], 'm.shin':['Shin','Голень'], 'm.ankle':['Ankle','Стопа'], 'm.foot':['Foot ahead','Стопа впереди'],
+  'm.trunk':['Trunk','Корпус'],
+  lLabel:['This frame shows','Этот кадр показывает'],
+  'lab.Touchdown':['Touchdown','Касание'], 'lab.Toe-off':['Toe-off','Отталкивание'], 'lab.Knee drive':['Knee drive','Подъём колена'], 'lab.Other':['Other','Другое'],
+  save:['Save pose','Сохранить позу'], undo:['Undo point','Отменить точку'], clear:['Clear points','Очистить точки'],
+  s:['s','с'], frame:['frame','кадр'], of:[d=>'of '+d+' s',d=>'из '+d+' с'],
+  hKino:['Kinogram','Кинограмма'],
+  kinoEmpty:['Key frames line up here in time order, each with its angles. Run the automatic analysis, or save a touchdown, a toe-off and a knee drive by hand.','Ключевые кадры выстраиваются здесь по времени, каждый с углами. Запустите автоанализ или сохраните касание, отталкивание и подъём колена вручную.'],
+  demoBtn:['Load example poses','Загрузить примеры поз'],
+  del:['Delete','Удалить'], example:['Example','Пример'],
+  srcgemini:['Gemini','Gemini'], srcpose:['Pose model','Модель позы'], srcmanual:['Manual','Вручную'], srcdemo:['Example','Пример'],
+  jointsBy:['Joints','Суставы'],
+  poseAlt:[(l,t)=>l+' pose at '+t+' seconds',(l,t)=>'Поза: '+l+', '+t+' с'],
+  toastSaved:[(l,t)=>'Saved '+l+' at '+t+' s',(l,t)=>'Сохранено: '+l+', '+t+' с'],
+  toastDemo:['Example poses loaded. Choose your own video to replace them.','Примеры загружены. Выберите своё видео, чтобы заменить их.'],
+  toastErr:['This video could not be opened. Try an MP4 or MOV file.','Не удалось открыть видео. Попробуйте файл MP4 или MOV.'],
+  hReport:['Technique report','Отчёт о технике'],
+  reportEmpty:['Run the analysis or save a Touchdown, Toe-off or Knee drive pose to get checks, cues and drills.','Запустите анализ или сохраните позу касания, отталкивания или подъёма колена, чтобы получить проверки, подсказки и упражнения.'],
+  reportOther:['Poses labeled Other are not scored. Save a Touchdown, Toe-off or Knee drive pose to get checks.','Позы с меткой «Другое» не оцениваются. Сохраните позу касания, отталкивания или подъёма колена.'],
+  checksOk:['checks in range','проверок в норме'],
+  ofN:[(g,n)=>g+' of '+n,(g,n)=>g+' из '+n],
+  reportDemo:['This report uses example poses. Choose your own video to replace them.','Отчёт построен по примерам поз. Выберите своё видео, чтобы заменить их.'],
+  reportAltis:['Read the ALTIS coaching principles below before you apply a cue.','Перед тем как применять подсказку, прочитайте принципы ALTIS ниже.'],
+  gWork:['Work on','Нужно поработать'], gClose:['Close to range','Почти в норме'], gGood:['In range','В норме'],
+  pgood:['In range','В норме'], pok:['Close','Почти'], pwork:['Work on','Работать'],
+  target:['target','цель'], drills:['Drills:','Упражнения:'],
+  outside:['Outside the usual range.','Вне обычного диапазона.'],
+  fwd:[v=>v+'° forward',v=>v+'° вперёд'], back:[v=>v+'° back',v=>v+'° назад'],
+  deg:[v=>v+'°',v=>v+'°'],
+
+  hRhythm:['Rhythm across all steps','Ритм по всем шагам'],
+  rhSteps:['Steps','Шаги'], rhContact:['Contact','Контакт'], rhFlight:['Flight','Полёт'], rhRate:['Step rate','Частота'],
+  rhCL:['Contact L','Контакт Л'], rhCR:['Contact R','Контакт П'],
+  ms:['ms','мс'], perS:['/s','/с'],
+  rhNote:[x=>'Measured from every step the pose model tracked. Timing is accurate to about '+x+' ms.',x=>'Измерено по всем шагам, которые отследила модель позы. Точность времени около '+x+' мс.'],
+
+  'r.foot.name':['Foot landing','Приземление стопы'],
+  'r.foot.ahead':[v=>v+' thigh lengths ahead of the hip',v=>v+' длины бедра впереди таза'],
+  'r.foot.behind':[v=>v+' thigh lengths behind the hip',v=>v+' длины бедра позади таза'],
+  'r.foot.t':['under 0.35 thigh lengths ahead of the hip','меньше 0,35 длины бедра впереди таза'],
+  'r.foot.hi':['The foot lands far in front of the hip, which brakes you. Strike down and back so it lands closer under the body.','Стопа приземляется далеко впереди таза и тормозит бег. Ставьте её ниже и ближе к телу, под тазом.'],
+  'r.foot.hid':['A-skips, wall drill, fast-leg drill','А-скип, упражнение у стены, быстрая нога (fast-leg)'],
+  'r.foot.lo':['The foot lands behind the hip. Keep the leg swinging through in front, then strike down.','Стопа приземляется позади таза. Проносите ногу вперёд, а затем ставьте её вниз.'],
+  'r.foot.lod':['A-skips, high-knee runs','А-скип, бег с высоким подниманием бедра'],
+  'r.knee.name':['Knee angle','Угол колена'],
+  'r.knee.t':['150 to 175°','150–175°'],
+  'r.knee.lo':['The knee is bent a lot at landing, so the leg collapses. Stay tall and stiff so the leg acts like a spring.','Колено сильно согнуто при касании, нога проваливается. Оставайтесь высоким и «жёстким», чтобы нога работала как пружина.'],
+  'r.knee.lod':['Pogo jumps, ankle hops','Прыжки «пого», прыжки на голеностопе'],
+  'r.knee.hi':['The leg is almost locked out at landing. Keep a slight soft bend.','Нога почти полностью выпрямлена при касании. Сохраняйте лёгкий сгиб в колене.'],
+  'r.knee.hid':['A-runs, fast-leg drill','А-ран, быстрая нога (fast-leg)'],
+  'r.ankle.name':['Ankle angle','Угол стопы'],
+  'r.ankle.t':['75 to 105° (toes up)','75–105° (носок подтянут)'],
+  'r.ankle.hi':['The toes point down at landing. If ankle mobility allows, bring the toes up before contact so the foot lands stiff.','Носок смотрит вниз при касании. Если подвижность голеностопа позволяет, подтяните носок до касания, чтобы стопа встала жёстко.'],
+  'r.ankle.hid':['Dorsiflexion drill, A-skips','Упражнения на подтягивание стопы, А-скип'],
+  'r.ankle.lo':['The ankle is very hooked. Keep it neutral and stiff.','Стопа сильно подтянута. Держите её нейтрально и жёстко.'],
+  'r.ankle.lod':['Ankle hops','Прыжки на голеностопе'],
+  'r.lean.name':['Trunk lean','Наклон корпуса'],
+  'r.lean.top.t':['0 to 12° forward','0–12° вперёд'], 'r.lean.acc.t':['25 to 50° forward','25–50° вперёд'],
+  'r.lean.top.lo':['You are leaning back. Keep the chest over the hips and run tall.','Вы отклоняетесь назад. Держите грудь над тазом и бегите высоко.'],
+  'r.lean.top.lod':['Wall drill, tall posture marches','Упражнение у стены, ходьба с высокой осанкой'],
+  'r.lean.acc.lo':['Too upright for the drive phase. Push the hips out and hold one straight line from head to ankle.','Слишком вертикально для фазы разгона. Выводите таз вперёд и держите одну прямую линию от головы до голеностопа.'],
+  'r.lean.acc.lod':['Sled marches, hill sprints, wall drill','Ходьба с санями, спринт в горку, упражнение у стены'],
+  'r.lean.top.hi':['Leaning too far forward for top speed. Rise gradually through the acceleration and finish tall.','Наклон вперёд слишком большой для максимальной скорости. Выпрямляйтесь постепенно в ходе разгона.'],
+  'r.lean.acc.hi':['Leaning too far forward. Hold the line without folding at the waist.','Наклон вперёд слишком большой. Держите линию, не ломаясь в поясе.'],
+  'r.lean.hid':['Build-up runs over 30 m, rising slowly','Набор скорости на 30 м с плавным выпрямлением'],
+  'r.kext.name':['Knee extension','Разгибание колена'],
+  'r.kext.t':['155° or more','155° и больше'],
+  'r.kext.lo':['The leg leaves the ground still bent, so the push is short. Check hip and ankle strength and mobility first rather than forcing full extension.','Нога покидает опору ещё согнутой, толчок получается коротким. Сначала проверьте силу и подвижность таза и голеностопа, а не заставляйте ногу выпрямляться.'],
+  'r.kext.lod':['Sled pushes, bounding, hill sprints','Толкание саней, прыжковый бег, спринт в горку'],
+  'r.hext.name':['Hip extension','Разгибание бедра'],
+  'r.hext.behind':[v=>v+'° behind vertical',v=>v+'° позади вертикали'],
+  'r.hext.front':[v=>v+'° in front of vertical',v=>v+'° впереди вертикали'],
+  'r.hext.t':['thigh at least 10° behind vertical','бедро минимум на 10° позади вертикали'],
+  'r.hext.hi':['The thigh is still under the hip at toe-off. Finish the push by driving the hip forward over the foot.','К моменту отталкивания бедро ещё под тазом. Завершите толчок, выводя таз вперёд над стопой.'],
+  'r.hext.hid':['Glute bridges, hill sprints, sled marches','Ягодичный мостик, спринт в горку, ходьба с санями'],
+  'r.klift.name':['Knee lift','Подъём колена'],
+  'r.klift.fmt':[v=>v+'° from vertical',v=>v+'° от вертикали'],
+  'r.klift.t':['75° or more (thigh near horizontal)','75° и больше (бедро почти горизонтально)'],
+  'r.klift.lo':['The knee does not lift high enough. Drive the knee up in front to get a longer, stronger stride.','Колено поднимается недостаточно высоко. Выводите колено вверх и вперёд, чтобы шаг был длиннее и сильнее.'],
+  'r.klift.lod':['High-knee runs, A-skips, hanging knee raises','Бег с высоким подниманием бедра, А-скип, подъём коленей в висе'],
+  'r.heel.name':['Heel recovery','Возврат пятки'],
+  'r.heel.fmt':[v=>v+'° knee angle',v=>'угол колена '+v+'°'],
+  'r.heel.t':['under 110°','меньше 110°'],
+  'r.heel.hi':['The leg swings through too straight. Fold the heel up toward the hip to shorten the lever.','Нога выносится слишком прямой. Подтяните пятку к тазу, чтобы укоротить рычаг.'],
+  'r.heel.hid':['A-runs, butt kicks into A-skip, wall drill','А-ран, захлёст голени с переходом в А-скип, упражнение у стены'],
+  'r.contact.name':['Ground contact time','Время контакта с землёй'],
+  'r.contact.ctx':[(a,b)=>'Touchdown '+a+' s to toe-off '+b+' s',(a,b)=>'Касание '+a+' с, отталкивание '+b+' с'],
+  'r.contact.v':[v=>v+' ms',v=>v+' мс'],
+  'r.contact.t':[g=>'under '+g+' ms',g=>'меньше '+g+' мс'],
+  'r.contact.cue':['Ground contact is long. Think hot ground: quick, stiff pushes with the foot already under you.','Контакт с землёй слишком долгий. Представьте горячую землю: быстрые жёсткие толчки, стопа уже под телом.'],
+  'r.contact.drill':['Pogo jumps, ankle hops, fast-leg drill','Прыжки «пого», прыжки на голеностопе, быстрая нога (fast-leg)'],
+  'r.contact.note':[x=>'One frame is '+x+' ms, so this reading can be off by that much. Film at 120 fps or more for a sharper number.',x=>'Один кадр длится '+x+' мс, поэтому результат может отличаться на эту величину. Для точности снимайте от 120 кадр/с.'],
+  'r.sym.name':['Left–right balance','Баланс левой и правой ноги'],
+  'r.sym.v':[(l,r,p)=>'L '+l+' ms · R '+r+' ms ('+p+'% apart)',(l,r,p)=>'Л '+l+' мс · П '+r+' мс (разница '+p+'%)'],
+  'r.sym.t':['contact times within 8% of each other','разница во времени контакта меньше 8%'],
+  'r.sym.cue':['One leg stays on the ground longer. Look for a strength or mobility gap on that side before cueing it.','Одна нога дольше остаётся на земле. Прежде чем давать подсказки, поищите разницу в силе или подвижности на этой стороне.'],
+  'r.sym.drill':['Single-leg pogo hops, single-leg A-skips, split squats','Прыжки «пого» на одной ноге, А-скип на одной ноге, выпады'],
+
+  hCoach:['Gemini coach','Тренер Gemini'],
+  coachIntro:['Gemini reads the measured angles and the kinogram frames and tells you what to fix first.','Gemini читает измеренные углы и кадры кинограммы и говорит, что исправить в первую очередь.'],
+  coachBtn:['Ask the Gemini coach','Спросить тренера Gemini'], coachAgain:['Ask again','Спросить снова'],
+  cPri:['Fix first','Исправить в первую очередь'], cStr:['Working well','Получается хорошо'], cFilm:['Filming notes','Замечания по съёмке'],
+  cCue:['Cue:','Подсказка:'], cDrills:['Drills:','Упражнения:'],
+  cConf:[v=>'Confidence: '+v,v=>'Уверенность: '+v], confhigh:['high','высокая'], confmedium:['medium','средняя'], conflow:['low','низкая'],
+  cLang:['These notes are in the other language. Ask again to get them in this one.','Эти заметки на другом языке. Спросите снова, чтобы получить их на этом.'],
+  cBusy:['Gemini is writing the coach notes…','Gemini пишет заметки тренера…'],
+  cAi:['AI-written notes. Check them against what you see.','Заметки написаны ИИ. Сверяйте их с тем, что видите.'],
+
+  hAltis:['ALTIS tips','Советы ALTIS'],
+  altisIntro:['Principles from the ALTIS Kinogram Method for filming, choosing frames and coaching what you see.','Принципы метода ALTIS Kinogram: как снимать, выбирать кадры и тренировать то, что вы видите.'],
+  'a.ph':['Coaching principles','Принципы тренировки'],
+  'a.p1':['Compare both legs to spot asymmetries and positions outside the athlete\'s normal range.','Сравнивайте обе ноги, чтобы заметить асимметрию и положения вне привычного диапазона спортсмена.'],
+  'a.p2':['Look for the root cause, such as a mobility or strength limit, instead of only repeating cues.','Ищите первопричину, например ограничение подвижности или силы, а не просто повторяйте команды.'],
+  'a.p3':['Be careful with cues that force full extension, or clawing and pawing. Recovery of the swing leg is largely reflexive.','Осторожнее с командами, которые заставляют полностью разгибать ногу, «загребать» или «царапать» землю. Возврат маховой ноги в основном рефлекторный.'],
+  'a.p4':['Keep the head neutral, the pelvis stable and the hands relaxed.','Голова нейтральна, таз стабилен, кисти расслаблены.'],
+  'a.p5':['Cue dorsiflexion only if the athlete has enough passive ankle range.','Просите подтягивать носок, только если пассивной подвижности голеностопа достаточно.'],
+  'a.p6':['Use reference models as a guide, but allow for individual differences, especially in athletes who already run well.','Используйте эталонные модели как ориентир, но учитывайте индивидуальные различия, особенно у тех, кто уже бегает хорошо.'],
+  'a.kh':['Key positions to capture','Ключевые позиции для кадров'],
+  'a.k1':['Toe-off: the last moment the stance foot touches the ground.','Отталкивание: последний момент, когда опорная стопа касается земли.'],
+  'a.k2':['Maximal vertical projection: the highest point of the body in flight.','Максимальная вертикальная проекция: самая высокая точка тела в полёте.'],
+  'a.k3':['Strike: the opposite thigh is vertical and the hamstring of the front leg is most stretched.','«Удар» (strike): другое бедро вертикально, а задняя поверхность бедра выносимой вперёд ноги растянута сильнее всего.'],
+  'a.k4':['Touchdown: the first contact of the front foot with the ground.','Касание: первый контакт выносимой вперёд стопы с землёй.'],
+  'a.k5':['Full support: the stance foot sits directly under the pelvis.','Полная опора: опорная стопа находится строго под тазом.'],
+  'a.k6':['Short on time? Two frames, toe-off plus touchdown or full support, still capture most of the key mechanics.','Мало времени? Два кадра, отталкивание плюс касание или полная опора, уже показывают основное в механике.'],
+  'a.fh':['Filming and setup','Съёмка и подготовка'],
+  'a.f1':['Film in landscape from a fixed distance with the camera level and still.','Снимайте горизонтально с одного и того же расстояния. Камера ровная и неподвижная.'],
+  'a.f2':['Use frames where the athlete is closest to square on to the camera, and capture every key position for both legs.','Берите кадры, где спортсмен ближе всего к положению строго боком к камере, и отмечайте каждую ключевую позицию для обеих ног.'],
+  'a.f3':['Crop and align the stills the same way so they compare cleanly in one grid. The kinogram here crops for you.','Обрезайте и выравнивайте кадры одинаково, чтобы их было удобно сравнивать в одной сетке. Кинограмма в приложении обрезает кадры сама.'],
+  'a.f4':['Repeat about once a week to see change over time.','Повторяйте примерно раз в неделю, чтобы видеть изменения со временем.'],
+  'a.link':['Read: The ALTIS Kinogram Method (SimpliFaster)','Читать: The ALTIS Kinogram Method (SimpliFaster)'],
+  'a.note':['Summarized in our own words. Stride Lab is not made by or connected to ALTIS.','Пересказано своими словами. Stride Lab не создан ALTIS и не связан с ней.'],
+  footnote:['The pose model runs on your device. With a Gemini key, only the key frames are sent to Google so Gemini can place the joints and write notes; the full video is never uploaded. Points can be wrong on blurry frames or when legs overlap, so drag a point to correct it. Ranges are general coaching guidelines for side-view video, not a diagnosis.','Модель позы работает на вашем устройстве. С ключом Gemini в Google отправляются только ключевые кадры, чтобы Gemini поставил суставы и написал заметки; видео целиком не загружается. Точки могут ошибаться на размытых кадрах или когда ноги перекрываются, поэтому поправьте точку перетаскиванием. Диапазоны это общие тренерские ориентиры для видео сбоку, а не диагноз.']
+};
+
+const JOINTS=5, CYCLE=['Touchdown','Toe-off','Knee drive'];
+const SKEL='#F0CF88', TW=360, TH=480;
+const state={
+  ready:false,vw:0,vh:0,dirMode:'auto',autoDir:1,dirAcc:0,phaseMode:'auto',phase:'top',fps:30,fpsMode:'auto',fpsDetected:0,slow:1,speed:0.5,
+  pts:[],active:-1,drag:null,label:'Touchdown',poses:[],nextId:1,url:null,fname:'',lang:'en',
+  model:'loading',side:'auto',lastSide:'L',found:false,ptsSrc:'',lastDetT:-1,lastLm:null,
+  job:null,scanning:false,pendingAuto:false,rhythm:null,coach:null,coachBusy:false,coachErr:'',autoRun:true
+};
+
+function t(key){
+  const e=D[key]; if(!e) return key;
+  const v=e[state.lang==='ru'?1:0];
+  return typeof v==='function'?v.apply(null,Array.prototype.slice.call(arguments,1)):v;
+}
+function fx(v,d){ const s=Number(v).toFixed(d); return state.lang==='ru'?s.replace('.',','):s; }
+function curDir(){ return state.dirMode==='auto'?state.autoDir:Number(state.dirMode); }
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+const video=$('#video'), canvas=$('#canvas'), ctx=canvas.getContext('2d');
+const slider=$('#slider'), playBtn=$('#play');
+
+let toastTimer=0;
+function toast(msg){
+  const el=$('#toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),3600);
+}
+const deg=r=>r*180/Math.PI;
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function median(a){ if(!a.length) return 0; const s=a.slice().sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; }
+function pct(a,q){ const s=a.slice().sort((x,y)=>x-y); return s[Math.min(s.length-1,Math.floor(q*(s.length-1)))]; }
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+function interior(a,v,b){
+  const ux=a.x-v.x,uy=a.y-v.y,wx=b.x-v.x,wy=b.y-v.y;
+  const d=(ux*wx+uy*wy)/((Math.hypot(ux,uy)*Math.hypot(wx,wy))||1);
+  return deg(Math.acos(Math.max(-1,Math.min(1,d))));
+}
+function metrics(p,dir){
+  const S=p[0],H=p[1],K=p[2],A=p[3],T=p[4];
+  const seg=(a,b)=>deg(Math.atan2((b.x-a.x)*dir,(b.y-a.y)));
+  const thighLen=Math.hypot(H.x-K.x,H.y-K.y)||1;
+  return {
+    lean:deg(Math.atan2((S.x-H.x)*dir,(H.y-S.y))),
+    thigh:seg(H,K), shin:seg(K,A),
+    knee:interior(H,K,A), ankle:interior(K,A,T),
+    footAhead:((A.x-H.x)*dir)/thighLen
+  };
+}
+
+/* ---------- Gemini ---------- */
+const GEM={key:'',model:'gemini-flash-lite-latest'};
+const GEM_MODELS=['gemini-flash-lite-latest','gemini-flash-latest'];
+try{
+  const g=JSON.parse(localStorage.getItem('stridelab-gemini')||'{}');
+  if(g.key) GEM.key=g.key;
+  if(GEM_MODELS.indexOf(g.model)>=0) GEM.model=g.model;
+  if(g.autoRun===false) state.autoRun=false;
+}catch(e){}
+function saveGem(){ try{localStorage.setItem('stridelab-gemini',JSON.stringify({key:GEM.key,model:GEM.model,autoRun:state.autoRun}));}catch(e){} }
+
+async function gemini(parts,schema,signal){
+  if(!GEM.key) throw new Error(t('gNoKey'));
+  const url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(GEM.model)+':generateContent';
+  const gc={responseMimeType:'application/json',responseSchema:schema,
+    thinkingConfig:{thinkingLevel:GEM.model.indexOf('lite')>=0?'minimal':'low'}};
+  let tries=0, noThink=false;
+  for(;;){
+    const cfg=Object.assign({},gc); if(noThink) delete cfg.thinkingConfig;
+    const res=await fetch(url,{method:'POST',signal:signal,
+      headers:{'Content-Type':'application/json','x-goog-api-key':GEM.key},
+      body:JSON.stringify({contents:[{role:'user',parts:parts}],generationConfig:cfg})});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok){
+      const msg=(data.error&&data.error.message)||('HTTP '+res.status);
+      if(res.status===400&&!noThink&&/think/i.test(msg)){ noThink=true; continue; }
+      if((res.status===429||res.status>=500)&&tries<2){ tries++; await sleep(1500*tries); continue; }
+      throw new Error(msg.length>140?msg.slice(0,140)+'…':msg);
+    }
+    const cand=(data.candidates||[])[0];
+    const txt=((cand&&cand.content&&cand.content.parts)||[]).filter(p=>!p.thought).map(p=>p.text||'').join('');
+    if(!txt) throw new Error((cand&&cand.finishReason)||'empty reply');
+    try{ return JSON.parse(txt); }
+    catch(e){ const m=txt.match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]); throw new Error('bad JSON'); }
+  }
+}
+const PT={type:'OBJECT',properties:{x:{type:'NUMBER'},y:{type:'NUMBER'}},required:['x','y']};
+const JOINT_SCHEMA={type:'OBJECT',properties:{
+  found:{type:'BOOLEAN'},
+  label:{type:'STRING',enum:['Touchdown','Toe-off','Knee drive','Other']},
+  leg:{type:'STRING',enum:['left','right','unclear']},
+  facing:{type:'STRING',enum:['right','left','unclear']},
+  shoulder:PT,hip:PT,knee:PT,ankle:PT,toe:PT,
+  confidence:{type:'NUMBER'}
+},required:['found','label','leg','facing','shoulder','hip','knee','ankle','toe','confidence']};
+
+function grab(box,maxDim){
+  const s=Math.min(1,maxDim/Math.max(box.w,box.h));
+  const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(box.w*s)); c.height=Math.max(1,Math.round(box.h*s));
+  c.getContext('2d').drawImage(video,box.x,box.y,box.w,box.h,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg',0.86).split(',')[1];
+}
+function fullBox(){ return {x:0,y:0,w:state.vw,h:state.vh}; }
+function boxAround(pts,padK){ // pts normalized
+  const xs=pts.map(p=>p.x*state.vw), ys=pts.map(p=>p.y*state.vh);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const side=Math.max(x1-x0,y1-y0)*padK, cx=(x0+x1)/2, cy=(y0+y1)/2;
+  const w=Math.min(state.vw,Math.max(side,state.vh*0.25)), h=Math.min(state.vh,Math.max(side,state.vh*0.25));
+  return {x:Math.max(0,Math.min(state.vw-w,cx-w/2)),y:Math.max(0,Math.min(state.vh-h,cy-h/2)),w:w,h:h};
+}
+function lmBox(lm){ return boxAround(lm.filter(p=>p.v===undefined||p.v>0.3).map(p=>({x:p.x,y:p.y})),1.45); }
+
+function legText(leg){
+  if(leg==='left') return "Use the athlete's LEFT leg and left shoulder.";
+  if(leg==='right') return "Use the athlete's RIGHT leg and right shoulder.";
+  if(leg==='stance') return 'Use the stance leg: the leg whose foot is on, or closest to, the ground.';
+  if(leg==='swing') return 'Use the swing leg: the leg with the knee in front and the foot off the ground.';
+  return 'If the frame shows touchdown or toe-off, use the stance leg (foot on the ground). For knee drive or flight, use the swing leg (knee in front).';
+}
+/* Ask Gemini for the 5 joints. Returns {pts (normalized to the whole frame), label, facing, leg} or null. */
+async function gemJoints(o){
+  const box=o.box||fullBox(), cropped=!!o.box;
+  const prompt='You are a sprint biomechanics assistant. The image is one frame of side-view sprint video'+(cropped?' (cropped around the athlete)':'')+'.\n'+
+    'Locate these 5 points on ONE leg and the shoulder on the same side of the body:\n'+
+    '- shoulder: centre of the shoulder joint\n- hip: hip joint centre (greater trochanter), not the waistband\n- knee: centre of the knee joint\n- ankle: ankle joint centre (lateral malleolus)\n- toe: ball of the foot (metatarsal heads), not the tip of the shoe\n'+
+    'Leg: '+legText(o.leg)+'\n'+
+    (o.label?'This frame was picked as a '+o.label+' frame. Confirm or correct the label.\n':'Also classify the frame.\n')+
+    'Labels: Touchdown = first frame the front foot touches the ground. Toe-off = last frame the rear foot touches the ground. Knee drive = swing thigh at or near its highest point with the foot off the ground. Other = anything else.\n'+
+    'facing = the direction the athlete is running in the image. leg = which leg (athlete\'s left or right) you used.\n'+
+    'Coordinates: numbers from 0 to 1000, normalized to this image: x from the left edge, y from the top edge. Use joint centres, not clothing edges. If there is no person, set found=false.';
+  const r=await gemini([{text:prompt},{inlineData:{mimeType:'image/jpeg',data:o.b64||grab(box,768)}}],JOINT_SCHEMA,o.signal);
+  if(!r||!r.found) return null;
+  const pts=['shoulder','hip','knee','ankle','toe'].map(k=>{
+    const p=r[k]||{x:0,y:0};
+    return {x:clamp01((box.x+(p.x/1000)*box.w)/state.vw), y:clamp01((box.y+(p.y/1000)*box.h)/state.vh)};
+  });
+  return {pts:pts,label:r.label,facing:r.facing,leg:r.leg,conf:r.confidence};
+}
+/* Full-frame call, then a sharper second call on a crop when the athlete is small in the frame. */
+async function gemJointsAnywhere(o){
+  let r=await gemJoints(Object.assign({},o,{box:null}));
+  if(!r) return null;
+  const b=boxAround(r.pts,2.0);
+  if(b.h<state.vh*0.7||b.w<state.vw*0.7){
+    const r2=await gemJoints(Object.assign({},o,{box:b,b64:null}));
+    if(r2) r=r2;
+  }
+  return r;
+}
+
+/* ---------- AI pose model (MediaPipe, runs in the browser) ---------- */
+const LIB='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+const MODEL_URL='https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+let landmarker=null;
+function withTimeout(p,ms){
+  return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+}
+async function loadModel(){
+  try{
+    const mod=await withTimeout(import(LIB+'/vision_bundle.mjs'),30000);
+    const fileset=await withTimeout(mod.FilesetResolver.forVisionTasks(LIB+'/wasm'),30000);
+    const make=delegate=>mod.PoseLandmarker.createFromOptions(fileset,{
+      baseOptions:{modelAssetPath:MODEL_URL,delegate:delegate},
+      runningMode:'IMAGE',numPoses:1,
+      minPoseDetectionConfidence:0.4,minPosePresenceConfidence:0.4,minTrackingConfidence:0.4
+    });
+    try{ landmarker=await withTimeout(make('GPU'),45000); }
+    catch(e){ landmarker=await withTimeout(make('CPU'),45000); }
+    state.model='ready';
+  }catch(e){
+    state.model='failed';
+  }
+  updateUI();
+  if(state.ready&&!state.job){ detectNow(true); draw(); updateUI(); }
+  if(state.pendingAuto){ state.pendingAuto=false; autoAnalyze(); }
+}
+
+const SIDE_IDX={L:[11,23,25,27,31],R:[12,24,26,28,32]};
+const clamp01=v=>Math.max(0,Math.min(1,v));
+function applyLandmarks(lm){
+  state.lastLm=lm||null;
+  if(!lm){ state.pts=[]; return false; }
+  const vis=i=>(lm[i]&&lm[i].visibility!==undefined)?lm[i].visibility:1;
+  const score=s=>SIDE_IDX[s].reduce((a,i)=>a+vis(i),0)/5;
+  let side=state.side==='left'?'L':state.side==='right'?'R':null;
+  if(!side){
+    const l=score('L'), r=score('R');
+    side=state.lastSide;
+    if(side==='L'&&r>l+0.15) side='R';
+    else if(side==='R'&&l>r+0.15) side='L';
+    state.lastSide=side;
+  }
+  const d=(lm[0].x-(lm[11].x+lm[12].x)/2)+((lm[31].x-lm[29].x)+(lm[32].x-lm[30].x))/2;
+  if(Math.abs(d)>0.01){
+    state.dirAcc=state.dirAcc*0.85+(d>0?1:-1)*0.15;
+    if(state.dirMode==='auto') state.autoDir=state.dirAcc>=0?1:-1;
+  }
+  if(score(side)<0.3){ state.pts=[]; return false; }
+  state.pts=SIDE_IDX[side].map(i=>({x:clamp01(lm[i].x),y:clamp01(lm[i].y)}));
+  state.ptsSrc='pose';
+  return true;
+}
+let busy=false;
+function detectNow(force){
+  if(!state.ready||state.model!=='ready'||busy||state.active>=0||state.scanning) return;
+  if(!force&&video.currentTime===state.lastDetT) return;
+  busy=true;
+  state.lastDetT=video.currentTime;
+  try{
+    const res=landmarker.detect(video);
+    state.found=applyLandmarks(res&&res.landmarks&&res.landmarks[0]);
+  }catch(e){ state.found=false; state.pts=[]; }
+  busy=false;
+}
+
+/* ---------- drawing ---------- */
+function drawSkeleton(c,p,lw,r,activeIdx){
+  c.save(); c.lineCap='round'; c.lineJoin='round';
+  if(p.length>1){
+    c.beginPath(); c.moveTo(p[0].x,p[0].y); for(let i=1;i<p.length;i++) c.lineTo(p[i].x,p[i].y);
+    c.strokeStyle='rgba(0,0,0,.6)'; c.lineWidth=lw*2.2; c.stroke();
+    c.strokeStyle=SKEL; c.lineWidth=lw; c.stroke();
+  }
+  p.forEach((q,i)=>{
+    const rr=i===activeIdx?r*1.35:r;
+    c.beginPath(); c.arc(q.x,q.y,rr,0,Math.PI*2);
+    c.fillStyle='#FFF8EA'; c.fill(); c.lineWidth=lw*.7; c.strokeStyle='rgba(0,0,0,.75)'; c.stroke();
+  });
+  c.restore();
+}
+function draw(){
+  if(!state.ready) return;
+  const w=canvas.width,h=canvas.height;
+  try{ctx.drawImage(video,0,0,w,h);}catch(e){}
+  drawSkeleton(ctx,state.pts.map(q=>({x:q.x*w,y:q.y*h})),w/230,w/110,state.active);
+  if(state.active>=0) drawLoupe();
+}
+function drawLoupe(){
+  const p=state.pts[state.active]; if(!p) return;
+  const w=canvas.width, L=Math.round(w*0.26), z=3, m=Math.round(w*0.02);
+  const left=p.x>0.5?m:w-L-m, top=m;
+  const src=(L/z)*(state.vw/w);
+  const sx=p.x*state.vw-src/2, sy=p.y*state.vh-src/2;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(left+L/2,top+L/2,L/2,0,Math.PI*2); ctx.clip();
+  ctx.fillStyle='#000'; ctx.fillRect(left,top,L,L);
+  try{ctx.drawImage(video,sx,sy,src,src,left,top,L,L);}catch(e){}
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle=SKEL; ctx.lineWidth=w/300; ctx.beginPath(); ctx.arc(left+L/2,top+L/2,L/2,0,Math.PI*2); ctx.stroke();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=w/500;
+  ctx.beginPath(); ctx.moveTo(left+L/2-L*.12,top+L/2); ctx.lineTo(left+L/2+L*.12,top+L/2);
+  ctx.moveTo(left+L/2,top+L/2-L*.12); ctx.lineTo(left+L/2,top+L/2+L*.12); ctx.stroke();
+  ctx.restore();
+}
+function thumb(p,vw,vh,bg){
+  const xs=p.map(q=>q.x), ys=p.map(q=>q.y);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  let H=Math.max(y1-y0,(x1-x0)*4/3)*1.7, W=H*3/4;
+  if(W>vw){W=vw;H=W*4/3;}
+  if(H>vh){H=vh;W=H*3/4;}
+  const cx=(x0+x1)/2, cy=(y0+y1)/2;
+  const x=Math.max(0,Math.min(vw-W,cx-W/2)), y=Math.max(0,Math.min(vh-H,cy-H/2));
+  const c=document.createElement('canvas'); c.width=TW; c.height=TH;
+  const g=c.getContext('2d');
+  try{bg(g,{x:x,y:y,w:W,h:H});}catch(e){g.fillStyle='#0B0A08';g.fillRect(0,0,TW,TH);}
+  const s=TW/W;
+  drawSkeleton(g,p.map(q=>({x:(q.x-x)*s,y:(q.y-y)*s})),TW/60,TW/45,-1);
+  return c.toDataURL('image/jpeg',0.86);
+}
+const videoThumb=p=>thumb(p,state.vw,state.vh,(g,c)=>g.drawImage(video,c.x,c.y,c.w,c.h,0,0,TW,TH));
+
+/* ---------- language ---------- */
+function setPlayText(){ playBtn.textContent=video.paused?t('play'):t('pause'); }
+function fmtTime(){
+  const tm=video.currentTime||0;
+  $('#tread').innerHTML='<b>'+fx(tm,3)+' '+t('s')+'</b> · '+t('frame')+' '+Math.round(tm*state.fps);
+}
+function durText(){ $('#dur').textContent=t('of',fx(video.duration||0,3)); }
+function fpsNote(){
+  $('#fps-note').textContent=state.fpsMode!=='auto'?'':state.fpsDetected?t('fpsDetected',state.fpsDetected):(state.ready?t('fpsGuess'):'');
+}
+function applyStatic(){
+  document.documentElement.setAttribute('lang',state.lang);
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+  document.querySelectorAll('[data-aria]').forEach(el=>{el.setAttribute('aria-label',t(el.dataset.aria));});
+  document.querySelectorAll('[data-ph]').forEach(el=>{el.setAttribute('placeholder',t(el.dataset.ph));});
+  $('#fname').textContent=state.fname||t('noVideo');
+  setPlayText(); fmtTime(); durText(); fpsNote(); gemUI();
+}
+function setLang(l){
+  state.lang=l;
+  try{localStorage.setItem('stridelab-lang',l);}catch(e){}
+  setSeg('lang',l);
+  applyStatic(); updateUI(); renderKino(); renderReport();
+}
+
+/* ---------- Gemini settings UI ---------- */
+function gemUI(){
+  const on=!!GEM.key, pill=$('#gem-pill');
+  pill.textContent=on?t('gOn'):t('gOff'); pill.className='pill '+(on?'on':'off');
+  $('#gem-model').value=GEM.model;
+  $('#gem-forget').hidden=!on;
+  $('#gem-key').value=on?'••••••••'+GEM.key.slice(-4):'';
+}
+$('#gem-save').addEventListener('click',()=>{
+  const v=$('#gem-key').value.trim();
+  if(!v||v.indexOf('•')>=0) return;
+  GEM.key=v; saveGem(); gemUI(); updateUI(); renderReport();
+  $('#gem-msg').textContent=t('gSaved');
+});
+$('#gem-key').addEventListener('focus',e=>{ if(e.target.value.indexOf('•')>=0) e.target.value=''; });
+$('#gem-key').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#gem-save').click(); });
+$('#gem-forget').addEventListener('click',()=>{ GEM.key=''; saveGem(); gemUI(); updateUI(); renderReport(); $('#gem-msg').textContent=t('gRemoved'); });
+$('#gem-model').addEventListener('change',e=>{ GEM.model=e.target.value; saveGem(); });
+$('#gem-test').addEventListener('click',async()=>{
+  const v=$('#gem-key').value.trim();
+  if(v&&v.indexOf('•')<0){ GEM.key=v; saveGem(); gemUI(); updateUI(); }
+  const msg=$('#gem-msg'); msg.textContent=t('gTesting');
+  try{
+    await gemini([{text:'Reply with ok=true.'}],{type:'OBJECT',properties:{ok:{type:'BOOLEAN'}},required:['ok']});
+    msg.textContent=t('gOk');
+  }catch(e){ msg.textContent=t('gBad',e.message); }
+});
+$('#autorun').checked=state.autoRun;
+$('#autorun').addEventListener('change',e=>{ state.autoRun=e.target.checked; saveGem(); });
+
+/* ---------- video ---------- */
+function sync(){ slider.value=video.currentTime||0; fmtTime(); }
+function setTime(tm){
+  if(!state.ready) return;
+  video.currentTime=Math.max(0,Math.min(video.duration||0,tm));
+  sync();
+}
+function setNeeds(on){ document.querySelectorAll('[data-needs]').forEach(el=>{el.disabled=!on;}); }
+function loadVideo(f){
+  if(state.job) cancelJob();
+  if(state.url) URL.revokeObjectURL(state.url);
+  state.ready=false; state.pts=[]; state.active=-1; state.found=false; state.lastDetT=-1; state.dirAcc=0; state.lastLm=null;
+  state.fpsDetected=0; state.rhythm=null; state.coach=null; state.coachErr='';
+  setNeeds(false); hideProg();
+  if(state.poses.length){ state.poses=[]; renderKino(); }
+  renderReport();
+  state.url=URL.createObjectURL(f);
+  state.fname=f.name; state.file=f; $('#fname').textContent=f.name;
+  video.src=state.url; video.load();
+  updateUI();
+}
+function snapFps(f){
+  const STD=[24,25,30,48,50,60,90,100,120,240];
+  let best=30,bd=1e9; STD.forEach(s=>{const d=Math.abs(Math.log(f/s)); if(d<bd){bd=d;best=s;}});
+  return bd<0.08?best:Math.round(f);
+}
+/* Reads the real frame rate by playing a moment of the clip slowly and timing the decoded frames. */
+function detectFps(){
+  return new Promise(resolve=>{
+    if(!('requestVideoFrameCallback' in HTMLVideoElement.prototype)) return resolve(0);
+    const times=[]; let stop=false, done=false;
+    const cb=(now,md)=>{ times.push(md.mediaTime); if(!stop&&times.length<48) video.requestVideoFrameCallback(cb); };
+    const finish=()=>{
+      if(done) return; done=true; stop=true; video.pause();
+      const d=[]; for(let i=1;i<times.length;i++){ const x=times[i]-times[i-1]; if(x>0.0005) d.push(x); }
+      if(d.length<4) return resolve(0);
+      d.sort((a,b)=>a-b);
+      resolve(snapFps(1/d[Math.floor(d.length*0.25)]));
+    };
+    video.requestVideoFrameCallback(cb);
+    video.playbackRate=0.25;
+    const p=video.play();
+    if(p&&p.catch) p.catch(()=>{ stop=true; done=true; resolve(0); });
+    setTimeout(finish,1100);
+  });
+}
+/* Exact frame rate from the MP4 / MOV header: the video track's timescale over its most common frame duration. */
+async function mp4Fps(file){
+  try{
+    if(!file) return 0;
+    const str=(dv,o)=>String.fromCharCode(dv.getUint8(o),dv.getUint8(o+1),dv.getUint8(o+2),dv.getUint8(o+3));
+    let off=0, moov=null;
+    while(off+8<=file.size){
+      const h=new DataView(await file.slice(off,off+16).arrayBuffer());
+      let size=h.getUint32(0), hdr=8; const type=str(h,4);
+      if(size===1){ size=Number(h.getBigUint64(8)); hdr=16; } else if(size===0) size=file.size-off;
+      if(size<8) return 0;
+      if(type==='moov'){ moov=new DataView(await file.slice(off+hdr,off+size).arrayBuffer()); break; }
+      off+=size;
+    }
+    if(!moov) return 0;
+    const kids=(s,e)=>{ const out=[]; let o=s;
+      while(o+8<=e){ let size=moov.getUint32(o), hdr=8; const type=str(moov,o+4);
+        if(size===1){ size=Number(moov.getBigUint64(o+8)); hdr=16; } else if(size===0) size=e-o;
+        if(size<8) break; out.push({type:type,s:o+hdr,e:o+size}); o+=size; }
+      return out; };
+    for(const trak of kids(0,moov.byteLength).filter(b=>b.type==='trak')){
+      const mdia=kids(trak.s,trak.e).find(b=>b.type==='mdia'); if(!mdia) continue;
+      const mk=kids(mdia.s,mdia.e);
+      const hdlr=mk.find(b=>b.type==='hdlr'); if(!hdlr||str(moov,hdlr.s+8)!=='vide') continue;
+      const mdhd=mk.find(b=>b.type==='mdhd'), minf=mk.find(b=>b.type==='minf'); if(!mdhd||!minf) continue;
+      const scale=moov.getUint32(mdhd.s+(moov.getUint8(mdhd.s)===1?20:12));
+      const stbl=kids(minf.s,minf.e).find(b=>b.type==='stbl'); if(!stbl) continue;
+      const stts=kids(stbl.s,stbl.e).find(b=>b.type==='stts'); if(!stts) continue;
+      const n=moov.getUint32(stts.s+4); let best=0,bc=0;
+      for(let i=0;i<n&&i<100000;i++){ const c=moov.getUint32(stts.s+8+i*8), d=moov.getUint32(stts.s+12+i*8); if(c>bc){bc=c;best=d;} }
+      if(best>0&&scale>0) return snapFps(scale/best);
+    }
+  }catch(e){}
+  return 0;
+}
+async function runFpsDetect(){
+  state.scanning=true;
+  const f=(await mp4Fps(state.file))||(await detectFps());
+  video.playbackRate=state.speed;
+  state.scanning=false;
+  state.fpsDetected=f;
+  if(state.fpsMode==='auto') state.fps=f||30;
+  slider.step=1/state.fps; fpsNote(); fmtTime();
+}
+video.addEventListener('loadedmetadata',async()=>{
+  state.vw=video.videoWidth; state.vh=video.videoHeight;
+  const cw=Math.min(state.vw,1280);
+  canvas.width=cw; canvas.height=Math.round(cw*state.vh/state.vw);
+  slider.max=video.duration;
+  durText();
+  state.ready=true; canvas.hidden=false; $('#empty').hidden=true;
+  $('#s-mark').scrollIntoView({behavior:'smooth',block:'start'});
+  if(state.fpsMode==='auto'){ setProg(t('pFps'),null); await runFpsDetect(); hideProg(); }
+  slider.step=1/state.fps;
+  await seekTo(0.001);
+  setNeeds(true); detectNow(true); draw(); updateUI();
+  if(state.autoRun){
+    if(state.model==='loading'){ state.pendingAuto=true; }
+    else autoAnalyze();
+  }
+});
+video.addEventListener('loadeddata',()=>{ if(!state.scanning){ detectNow(true); draw(); updateUI(); } });
+video.addEventListener('seeked',()=>{ if(state.scanning) return; detectNow(); draw(); updateUI(); });
+video.addEventListener('error',()=>{ if(state.url) toast(t('toastErr')); });
+video.addEventListener('pause',()=>{ setPlayText(); if(state.scanning) return; detectNow(); draw(); sync(); updateUI(); });
+video.addEventListener('ended',setPlayText);
+let lastUi=0;
+function loop(){
+  if(video.paused||state.scanning) return;
+  detectNow(); draw(); sync();
+  const now=performance.now();
+  if(now-lastUi>160){ lastUi=now; updateUI(); }
+  requestAnimationFrame(loop);
+}
+function seekTo(tm){
+  return new Promise(res=>{
+    let done=false;
+    const fin=()=>{ if(done) return; done=true; video.removeEventListener('seeked',fin); res(); };
+    video.addEventListener('seeked',fin);
+    video.currentTime=Math.max(0,Math.min(video.duration||0,tm));
+    setTimeout(fin,2000);
+  });
+}
+
+$('#file').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0]; if(f) loadVideo(f); e.target.value='';
+});
+slider.addEventListener('input',()=>{ if(!video.paused) video.pause(); setTime(parseFloat(slider.value)); });
+document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{
+  if(!video.paused) video.pause();
+  const n=Number(b.dataset.step);
+  setTime((Math.round(video.currentTime*state.fps)+n+0.25)/state.fps);
+}));
+playBtn.addEventListener('click',()=>{
+  if(!state.ready||state.job) return;
+  if(video.paused){
+    if(video.ended) video.currentTime=0;
+    video.playbackRate=state.speed;
+    const pr=video.play();
+    playBtn.textContent=t('pause');
+    if(pr&&pr.then) pr.then(loop).catch(setPlayText); else loop();
+  } else video.pause();
+});
+$('#fps').addEventListener('change',async e=>{
+  const v=e.target.value;
+  if(v==='auto'){
+    state.fpsMode='auto';
+    if(state.ready&&!state.fpsDetected&&!state.job){ const tm=video.currentTime; await runFpsDetect(); await seekTo(tm); }
+    state.fps=state.fpsDetected||30;
+  } else { state.fpsMode='manual'; state.fps=Number(v); }
+  slider.step=1/state.fps; fpsNote(); fmtTime(); renderReport();
+});
+
+/* ---------- progress ---------- */
+function setProg(text,frac,tone){
+  const p=$('#prog'); p.hidden=false; p.dataset.tone=tone||'';
+  $('#prog-t').textContent=text;
+  const tr=$('#prog-track');
+  tr.hidden=(tone==='good'||tone==='warn'||tone==='bad');
+  tr.classList.toggle('ind',frac==null);
+  $('#prog-bar').style.width=frac==null?'':Math.round(Math.max(0,Math.min(1,frac))*100)+'%';
+  $('#prog-x').hidden=!state.job;
+}
+function hideProg(){ $('#prog').hidden=true; }
+function cancelJob(){
+  const j=state.job; if(!j) return;
+  j.cancel=true; try{j.ctrl.abort();}catch(e){}
+}
+$('#prog-x').addEventListener('click',cancelJob);
+function chk(job){ if(job.cancel){ const e=new Error('cancelled'); e.cancelled=true; throw e; } }
+
+/* ---------- automatic analysis ---------- */
+const LMI={sh:[11,12],hip:[23,24],knee:[25,26],ank:[27,28],heel:[29,30],toe:[31,32]};
+const MAXF=900;
+async function scanVideo(job){
+  const fps=state.fps, dur=video.duration||0;
+  const n=Math.max(1,Math.floor(dur*fps));
+  const stride=Math.max(1,Math.ceil(n/MAXF));
+  const frames=[];
+  for(let i=0;i<n;i+=stride){
+    chk(job);
+    const tm=(i+0.5)/fps;
+    await seekTo(tm);
+    let lm=null;
+    try{ const r=landmarker.detect(video); lm=r&&r.landmarks&&r.landmarks[0]; }catch(e){}
+    frames.push({t:tm,lm:lm?lm.map(p=>({x:p.x,y:p.y,v:p.visibility==null?1:p.visibility})):null});
+    if(frames.length%3===1){ applyLandmarks(lm); draw(); setProg(t('pScan',i+1,n),i/n); }
+  }
+  return {frames:frames,dt:stride/fps,stride:stride};
+}
+function fillGaps(a,maxGap){
+  let i=0;
+  while(i<a.length){
+    if(a[i]!=null){i++;continue;}
+    let j=i; while(j<a.length&&a[j]==null) j++;
+    if(i>0&&j<a.length&&j-i<=maxGap){ for(let k=i;k<j;k++) a[k]=a[i-1]+(a[j]-a[i-1])*(k-i+1)/(j-i+1); }
+    i=j;
+  }
+}
+/* Ground contacts from where the lowest foot point sits against a rolling ground line. */
+function findEvents(sc){
+  const F=sc.frames, N=F.length, vw=state.vw, vh=state.vh, dt=sc.dt, slow=state.slow;
+  if(N<6) return null;
+  const P=(f,i)=>({x:f.lm[i].x*vw,y:f.lm[i].y*vh,v:f.lm[i].v});
+  const low=[new Array(N).fill(null),new Array(N).fill(null)];
+  const legs=[], dirv=[];
+  F.forEach((f,k)=>{
+    if(!f.lm) return;
+    for(const s of [0,1]){
+      const he=P(f,LMI.heel[s]), to=P(f,LMI.toe[s]);
+      low[s][k]=Math.max(he.y,to.y);
+      const H=P(f,LMI.hip[s]),K=P(f,LMI.knee[s]),A=P(f,LMI.ank[s]);
+      legs.push(dist(H,K)+dist(K,A));
+      dirv.push(to.x-he.x);
+    }
+    dirv.push((f.lm[0].x-(f.lm[11].x+f.lm[12].x)/2)*vw);
+  });
+  const leg=median(legs); if(!leg) return null;
+  if(state.dirMode==='auto'){ const sd=dirv.reduce((a,b)=>a+Math.sign(b),0); state.autoDir=sd>=0?1:-1; }
+  const dir=curDir();
+  fillGaps(low[0],3); fillGaps(low[1],3);
+  const win=Math.max(4,Math.round(0.6*slow/dt));
+  const ground=new Array(N).fill(null);
+  for(let k=0;k<N;k++){
+    const vals=[];
+    for(let j=Math.max(0,k-win);j<=Math.min(N-1,k+win);j++){ if(low[0][j]!=null) vals.push(low[0][j]); if(low[1][j]!=null) vals.push(low[1][j]); }
+    if(vals.length>3) ground[k]=pct(vals,0.92);
+  }
+  const tol=0.05*leg;
+  const contact=[], stance=[];
+  for(let k=0;k<N;k++){
+    const a=low[0][k], b=low[1][k];
+    const lo=a==null?b:b==null?a:Math.max(a,b);
+    contact[k]=lo!=null&&ground[k]!=null&&lo>=ground[k]-tol;
+    stance[k]=(a==null?-1e9:a)>=(b==null?-1e9:b)?0:1;
+    // A foot still dropping fast toward the ground has not landed yet.
+    const s=stance[k], nx=k+1<N?low[s][k+1]:null;
+    if(contact[k]&&nx!=null&&nx-low[s][k]>1.8*leg*dt/slow) contact[k]=false;
+  }
+  let segs=[];
+  for(let k=0;k<N;k++){
+    if(!contact[k]) continue;
+    const a=k; while(k+1<N&&contact[k+1]) k++;
+    segs.push({a:a,b:k});
+  }
+  const gapMax=dt/slow<0.012?3:dt/slow<0.03?2:1;
+  if(gapMax>1){
+    const m=[]; segs.forEach(s=>{ const l=m[m.length-1]; if(l&&s.a-l.b<=gapMax) l.b=s.b; else m.push(s); }); segs=m;
+  }
+  segs=segs.filter(s=>(s.b-s.a+1)*dt/slow<0.6);
+  if(!segs.length) return {picked:[],rhythm:null};
+  segs.forEach(s=>{ let c0=0; for(let k=s.a;k<=s.b;k++) if(stance[k]===0) c0++; s.mp=c0*2>=(s.b-s.a+1)?0:1; s.full=s.a>0&&s.b<N-1; });
+  // Alternate left and right step by step, counting a missed step when a gap is unusually long.
+  const gaps=[]; for(let i=1;i<segs.length;i++) gaps.push(segs[i].a-segs[i-1].a);
+  const mg=median(gaps)||1; let par=0;
+  segs.forEach((s,i)=>{ if(i>0) par+=Math.max(1,Math.round((s.a-segs[i-1].a)/mg)); s.par=par%2; });
+  let vote=0; segs.forEach(s=>{ vote+=(s.mp===s.par)?1:-1; });
+  segs.forEach(s=>{ const idx=vote>=0?s.par:1-s.par; s.side=idx===0?'L':'R'; });
+  const thigh=(f,s)=>{ const H=P(f,LMI.hip[s]),K=P(f,LMI.knee[s]); return deg(Math.atan2((K.x-H.x)*dir,(K.y-H.y))); };
+  segs.forEach((s,i)=>{
+    const nx=segs[i+1];
+    if(s.full) s.contactMs=(s.b-s.a+1)*dt/slow*1000;
+    if(nx&&nx.a-s.a<=mg*1.5){ s.flightMs=(nx.a-s.b-1)*dt/slow*1000; s.stepMs=(nx.a-s.a)*dt/slow*1000; }
+    // Knee drive: the swing leg's thigh at its highest during this step.
+    const end=nx?nx.a-1:Math.min(N-1,s.b+Math.round(0.25*slow/dt));
+    let best=null;
+    for(let k=s.a;k<=end;k++){
+      const f=F[k]; if(!f.lm) continue;
+      for(const sd of [0,1]){
+        if(low[sd][k]==null||ground[k]==null||low[sd][k]>=ground[k]-tol) continue;
+        const th=thigh(f,sd);
+        if(!best||th>best.th) best={k:k,s:sd,th:th};
+      }
+    }
+    if(best&&best.k>s.a&&best.k<end) s.kd=best;
+  });
+  const chain=(k,s)=>{ const f=F[k]; const ids=[LMI.sh[s],LMI.hip[s],LMI.knee[s],LMI.ank[s],LMI.toe[s]]; return {pts:ids.map(i=>({x:clamp01(f.lm[i].x),y:clamp01(f.lm[i].y)})),vis:mean(ids.map(i=>f.lm[i].v))}; };
+  const picked=[];
+  const sides=state.side==='left'?['L']:state.side==='right'?['R']:['L','R'];
+  sides.forEach(X=>{
+    let best=null;
+    segs.forEach((s,i)=>{
+      if(s.side!==X||!s.full||!F[s.a].lm||!F[s.b].lm) return;
+      const td=chain(s.a,stance[s.a]);
+      const hipx=td.pts[1].x;
+      const nx=segs[i+1];
+      const score=td.vis+(1-2*Math.abs(hipx-0.5))*0.6+(nx&&nx.kd?0.3:0);
+      if(!best||score>best.score) best={score:score,s:s,nx:nx};
+    });
+    if(!best) return;
+    const s=best.s;
+    const td=chain(s.a,stance[s.a]), to=chain(s.b,stance[s.b]);
+    picked.push({label:'Touchdown',t:F[s.a].t,leg:'stance',side:X,pts:td.pts,lm:F[s.a].lm,contactMs:s.contactMs});
+    picked.push({label:'Toe-off',t:F[s.b].t,leg:'stance',side:X,pts:to.pts,lm:F[s.b].lm});
+    if(best.nx&&best.nx.kd){ const kd=best.nx.kd; picked.push({label:'Knee drive',t:F[kd.k].t,leg:'swing',side:X,pts:chain(kd.k,kd.s).pts,lm:F[kd.k].lm}); }
+  });
+  const cL=segs.filter(s=>s.side==='L'&&s.contactMs).map(s=>s.contactMs), cR=segs.filter(s=>s.side==='R'&&s.contactMs).map(s=>s.contactMs);
+  const fl=segs.filter(s=>s.flightMs!=null).map(s=>s.flightMs), st=segs.filter(s=>s.stepMs).map(s=>s.stepMs);
+  const rhythm={steps:segs.length,contactL:mean(cL),contactR:mean(cR),nL:cL.length,nR:cR.length,
+    contact:mean(cL.concat(cR)),flight:mean(fl),rate:st.length?1000/mean(st):0,res:dt/slow*1000};
+  return {picked:picked,rhythm:rhythm};
+}
+/* Without the pose model: Gemini picks the frames from small stills, then places the joints. */
+async function gemFindFrames(job){
+  const dur=video.duration||0, slow=state.slow, fps=state.fps, sig=job.ctrl.signal;
+  setProg(t('pGemFrames'),null);
+  let center=dur/2;
+  if(dur>1.5*slow){
+    const n=12, times=[]; for(let i=0;i<n;i++) times.push((i+0.5)*dur/n);
+    const parts=[{text:'These are '+n+' stills from a side-view sprint video, in time order. Pick the index of the still where the athlete is clearly sprinting, fully in view and closest to side-on. If no athlete is running in any still, set found=false.'}];
+    for(let i=0;i<n;i++){ chk(job); await seekTo(times[i]); draw(); parts.push({text:'Still '+i}); parts.push({inlineData:{mimeType:'image/jpeg',data:grab(fullBox(),320)}}); }
+    const r=await gemini(parts,{type:'OBJECT',properties:{found:{type:'BOOLEAN'},best:{type:'INTEGER'}},required:['found','best']},sig);
+    if(!r.found) return [];
+    center=times[Math.max(0,Math.min(n-1,r.best|0))];
+  }
+  const win=0.7*slow, t0=Math.max(0,Math.min(dur-win,center-win/2)), t1=Math.min(dur,t0+win);
+  const count=Math.max(1,Math.round((t1-t0)*fps)), stride=Math.max(1,Math.ceil(count/16));
+  const times=[]; for(let i=0;i<count;i+=stride) times.push(t0+(i+0.5)/fps);
+  const parts=[{text:'These are '+times.length+' consecutive frames'+(stride>1?' (every '+stride+' video frames)':'')+' from a side-view sprint video. '+
+    'List each touchdown, toe-off and knee drive you can see, with the index of the frame that best shows it. '+
+    'Touchdown = the first frame the front foot touches the ground. Toe-off = the last frame the rear foot touches the ground. Knee drive = the swing thigh at its highest with the foot off the ground. '+
+    'leg = the athlete\'s left or right leg for that event (the stance leg for touchdown and toe-off, the swing leg for knee drive). Only list events you are confident about.'}];
+  for(let i=0;i<times.length;i++){ chk(job); await seekTo(times[i]); draw(); parts.push({text:'Frame '+i}); parts.push({inlineData:{mimeType:'image/jpeg',data:grab(fullBox(),448)}}); }
+  setProg(t('pGemFrames'),null);
+  const r=await gemini(parts,{type:'OBJECT',properties:{events:{type:'ARRAY',items:{type:'OBJECT',properties:{
+    label:{type:'STRING',enum:['Touchdown','Toe-off','Knee drive']},index:{type:'INTEGER'},leg:{type:'STRING',enum:['left','right','unclear']}},
+    required:['label','index','leg']}}},required:['events']},sig);
+  const out=[], seen={};
+  (r.events||[]).forEach(e=>{
+    const i=Math.max(0,Math.min(times.length-1,e.index|0)), key=e.label+i;
+    if(seen[key]) return; seen[key]=1;
+    out.push({label:e.label,t:times[i],leg:e.label==='Knee drive'?'swing':'stance',side:e.leg==='left'?'L':e.leg==='right'?'R':null});
+  });
+  return out.sort((a,b)=>a.t-b.t).slice(0,6);
+}
+async function autoAnalyze(){
+  if(!state.ready||state.job) return;
+  const hasPose=state.model==='ready', hasGem=!!GEM.key;
+  if(!hasPose&&!hasGem){ setProg(t('pNoModel'),null,'warn'); return; }
+  const job={cancel:false,ctrl:new AbortController()};
+  state.job=job; state.scanning=true; if(!video.paused) video.pause();
+  setNeeds(false); $('#stage').classList.add('busy'); updateUI();
+  let gemWarn='', longNote='';
+  try{
+    let events=[];
+    if(hasPose){
+      const sc=await scanVideo(job);
+      if(sc.stride>1) longNote=t('pLong',sc.stride);
+      setProg(t('pEvents'),null);
+      const ev=findEvents(sc);
+      state.rhythm=ev&&ev.rhythm&&ev.rhythm.steps>=2?ev.rhythm:null;
+      events=ev?ev.picked:[];
+      if(!events.length&&hasGem) events=await gemFindFrames(job);
+    } else {
+      state.rhythm=null;
+      events=await gemFindFrames(job);
+    }
+    if(!events.length){ setProg(t('pNoSteps'),null,'warn'); return; }
+    // Grab each key frame, then let Gemini place the joints (three requests at a time).
+    const shots=[];
+    for(const e of events){
+      chk(job); await seekTo(e.t);
+      const box=e.lm?lmBox(e.lm):null;
+      shots.push({e:e,box:box,b64:box?grab(box,768):null,img:null});
+    }
+    const results=new Array(shots.length).fill(null);
+    if(hasGem){
+      let done=0, next=0;
+      setProg(t('pGem',1,shots.length),0);
+      const worker=async()=>{
+        while(next<shots.length){
+          const i=next++; const sh=shots[i];
+          const leg=state.side==='left'?'left':state.side==='right'?'right':sh.e.leg;
+          try{
+            results[i]=sh.box?await gemJoints({box:sh.box,b64:sh.b64,leg:leg,label:sh.e.label,signal:job.ctrl.signal})
+              :await (async()=>{ await seekTo(sh.e.t); return gemJointsAnywhere({leg:leg,label:sh.e.label,signal:job.ctrl.signal}); })();
+          }catch(err){ if(job.cancel) throw err; gemWarn=err.message; }
+          done++; setProg(t('pGem',Math.min(done+1,shots.length),shots.length),done/shots.length);
+        }
+      };
+      // Frames without a pose-model crop need seeking, so run those one at a time.
+      const parallel=shots.every(s=>s.box)?3:1;
+      await Promise.all(Array.from({length:parallel},worker));
+    }
+    chk(job);
+    const poses=[];
+    for(let i=0;i<shots.length;i++){
+      const sh=shots[i], g=results[i];
+      const pts=g?g.pts:sh.e.pts;
+      if(!pts) continue;
+      if(g&&!sh.e.lm&&state.dirMode==='auto'&&(g.facing==='right'||g.facing==='left')) state.autoDir=g.facing==='right'?1:-1;
+      await seekTo(sh.e.t);
+      const p=pts.map(q=>({x:q.x*state.vw,y:q.y*state.vh}));
+      const side=sh.e.side||(g&&g.leg==='left'?'L':g&&g.leg==='right'?'R':null);
+      poses.push({id:state.nextId++,label:sh.e.label,t:sh.e.t,p:p,img:videoThumb(p),demo:false,side:side,src:g?'gemini':'pose',contactMs:sh.e.contactMs||null});
+      state.pts=pts; state.ptsSrc=g?'gemini':'pose'; draw();
+    }
+    const dirNow=curDir();
+    poses.forEach(ps=>{ ps.m=metrics(ps.p,dirNow); });
+    state.poses=state.poses.filter(p=>!p.demo&&p.src==='manual').concat(poses).sort((a,b)=>a.t-b.t);
+    state.coach=null; state.coachErr='';
+    renderKino(); renderReport();
+    const parts=[t('pDone',poses.length)];
+    if(gemWarn) parts.push(t('pGemFail',gemWarn));
+    if(longNote) parts.push(longNote);
+    const doneMsg=parts.join(' '), doneTone=gemWarn?'warn':'good';
+    setProg(doneMsg,1,doneTone);
+    if(poses.length&&state.ready) await seekTo(poses[0].t);
+    if(hasGem&&poses.length){ state.job=null; await askCoach(job,doneMsg,doneTone); }
+  }catch(e){
+    if(job.cancel||e.cancelled||e.name==='AbortError') setProg(t('pCancelled'),null,'warn');
+    else setProg(t('gBad',e.message),null,'bad');
+  }finally{
+    if(state.job===job) state.job=null;
+    state.scanning=false; $('#stage').classList.remove('busy');
+    if(state.ready) setNeeds(true);
+    $('#prog-x').hidden=true;
+    state.found=state.pts.length===JOINTS;
+    draw(); updateUI();
+  }
+}
+$('#auto').addEventListener('click',()=>autoAnalyze());
+
+/* One frame: Gemini places the joints where the playhead is. */
+$('#gemFrame').addEventListener('click',async()=>{
+  if(!state.ready||state.job) return;
+  if(!GEM.key){ toast(t('gNoKey')); $('#gem-box').open=true; $('#gem-box').scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  if(!video.paused) video.pause();
+  const job={cancel:false,ctrl:new AbortController()}; state.job=job; updateUI();
+  setProg(t('pGem',1,1),null);
+  try{
+    const leg=state.side==='left'?'left':state.side==='right'?'right':'auto';
+    const r=state.lastLm?await gemJoints({box:lmBox(state.lastLm),leg:leg,signal:job.ctrl.signal})
+      :await gemJointsAnywhere({leg:leg,signal:job.ctrl.signal});
+    if(!r){ setProg(t('gemNone'),null,'warn'); return; }
+    state.pts=r.pts; state.ptsSrc='gemini'; state.found=true;
+    if(state.dirMode==='auto'&&(r.facing==='right'||r.facing==='left')&&!state.lastLm) state.autoDir=r.facing==='right'?1:-1;
+    if(CYCLE.indexOf(r.label)>=0||r.label==='Other'){ state.label=r.label; setSeg('label',r.label); }
+    setProg(t('gemPlaced',t('lab.'+r.label)),1,'good');
+  }catch(e){
+    if(job.cancel||e.name==='AbortError') setProg(t('pCancelled'),null,'warn'); else setProg(t('gBad',e.message),null,'bad');
+  }finally{ state.job=null; $('#prog-x').hidden=true; draw(); updateUI(); }
+});
+
+/* ---------- joints: automatic, with manual correction ---------- */
+function toFrac(e){
+  const r=canvas.getBoundingClientRect();
+  return {x:Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)), y:Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))};
+}
+canvas.addEventListener('pointerdown',e=>{
+  if(!state.ready||state.job) return;
+  e.preventDefault();
+  if(!video.paused) video.pause();
+  const f=toFrac(e), r=canvas.getBoundingClientRect();
+  let idx=-1,best=34;
+  state.pts.forEach((p,i)=>{
+    const d=Math.hypot((p.x-f.x)*r.width,(p.y-f.y)*r.height);
+    if(d<best){best=d;idx=i;}
+  });
+  let off={x:0,y:0};
+  if(idx<0){
+    if(state.pts.length>=JOINTS) return;
+    state.pts.push(f); idx=state.pts.length-1;
+  } else off={x:state.pts[idx].x-f.x,y:state.pts[idx].y-f.y};
+  state.active=idx; state.drag=off;
+  try{canvas.setPointerCapture(e.pointerId);}catch(err){}
+  draw();
+});
+canvas.addEventListener('pointermove',e=>{
+  if(state.active<0) return;
+  e.preventDefault();
+  const f=toFrac(e);
+  state.pts[state.active]={
+    x:Math.max(0,Math.min(1,f.x+state.drag.x)),
+    y:Math.max(0,Math.min(1,f.y+state.drag.y))
+  };
+  draw();
+});
+function endDrag(){
+  if(state.active<0) return;
+  state.active=-1; state.drag=null; draw(); updateUI();
+}
+canvas.addEventListener('pointerup',endDrag);
+canvas.addEventListener('pointercancel',endDrag);
+
+function setSeg(key,val){
+  const seg=document.querySelector('.seg[data-key="'+key+'"]');
+  seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===String(val)?'true':'false'));
+}
+document.querySelectorAll('.seg').forEach(seg=>seg.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b||!seg.contains(b)) return;
+  const key=seg.dataset.key, raw=b.dataset.v;
+  if(key==='lang'){ setLang(raw); return; }
+  setSeg(key,raw);
+  if(key==='dir'){ state.dirMode=raw; recomputeMetrics(); }
+  if(key==='side'){ state.side=raw; detectNow(true); draw(); }
+  if(key==='phase'){ state.phaseMode=raw; renderReport(); }
+  if(key==='slow'){
+    const k=state.slow/Number(raw); state.slow=Number(raw);
+    state.poses.forEach(p=>{ if(p.contactMs) p.contactMs*=k; });
+    const r=state.rhythm;
+    if(r){ ['contactL','contactR','contact','flight','res'].forEach(f=>{ r[f]*=k; }); r.rate/=k; }
+    state.coach=null; renderReport();
+  }
+  if(key==='speed'){state.speed=Number(raw); video.playbackRate=state.speed;}
+  if(key==='label') state.label=raw;
+  updateUI();
+}));
+function recomputeMetrics(){
+  const d=curDir();
+  state.poses.forEach(p=>{ if(p.p&&!p.demo) p.m=metrics(p.p,d); });
+  renderKino(); renderReport();
+}
+
+function updateUI(){
+  const n=state.pts.length;
+  let chips='';
+  for(let i=0;i<JOINTS;i++) chips+='<li class="'+(i<n?'done':i===n?'next':'')+'"><span>'+(i+1)+'</span>'+t('j'+i)+'</li>';
+  $('#chips').innerHTML=chips;
+  $('#hint').textContent=!state.ready?t('hintNone'):n<JOINTS?t('hintPlace',t('j'+n).toLowerCase(),t('jh'+n)):t('hintDone');
+  let s='loading', key='mLoad';
+  if(state.ready&&state.ptsSrc==='gemini'&&n===JOINTS){ s='gem'; key='mGem'; }
+  else if(state.model==='failed'){ s='failed'; key='mFail'; }
+  else if(state.model==='ready'){
+    if(!state.ready){ s='ready'; key='mReady'; }
+    else if(state.found||n>0){ s='found'; key='mFound'; }
+    else { s='none'; key='mNone'; }
+  }
+  $('#mstat').dataset.s=s; $('#mstat-t').textContent=t(key);
+  $('#save').disabled=!(state.ready&&n===JOINTS)||!!state.job;
+  $('#auto').disabled=!state.ready||!!state.job||(state.model!=='ready'&&!GEM.key);
+  $('#gemFrame').disabled=!state.ready||!!state.job;
+  const live=$('#live');
+  if(n===JOINTS){
+    const m=metrics(state.pts.map(q=>({x:q.x*state.vw,y:q.y*state.vh})),curDir());
+    live.innerHTML=[['m.lean',fx(m.lean,0),'°'],['m.thigh',fx(m.thigh,0),'°'],['m.knee',fx(m.knee,0),'°'],['m.shin',fx(m.shin,0),'°'],['m.ankle',fx(m.ankle,0),'°'],['m.foot',fx(m.footAhead,2),'']]
+      .map(x=>'<div><dt>'+t(x[0])+'</dt><dd>'+x[1]+(x[2]?'<small>'+x[2]+'</small>':'')+'</dd></div>').join('');
+  } else live.innerHTML='';
+}
+$('#undo').addEventListener('click',()=>{ state.pts.pop(); state.ptsSrc='manual'; draw(); updateUI(); });
+$('#clear').addEventListener('click',()=>{ state.pts=[]; state.ptsSrc=''; draw(); updateUI(); });
+
+$('#save').addEventListener('click',()=>{
+  if(state.pts.length<JOINTS||!state.ready) return;
+  if(!video.paused) video.pause();
+  const p=state.pts.map(q=>({x:q.x*state.vw,y:q.y*state.vh}));
+  const tm=video.currentTime||0, saved=state.label;
+  state.poses.push({id:state.nextId++,label:saved,t:tm,p:p,m:metrics(p,curDir()),img:videoThumb(p),demo:false,
+    side:state.side==='left'?'L':state.side==='right'?'R':null,src:state.ptsSrc==='gemini'?'gemini':'manual'});
+  state.poses.sort((a,b)=>a.t-b.t);
+  state.coach=null;
+  toast(t('toastSaved',t('lab.'+saved),fx(tm,3)));
+  const ci=CYCLE.indexOf(saved);
+  if(ci>=0){ state.label=CYCLE[(ci+1)%CYCLE.length]; setSeg('label',state.label); }
+  draw(); updateUI(); renderKino(); renderReport();
+});
+
+/* ---------- kinogram ---------- */
+function renderKino(){
+  $('#kino-empty').hidden=state.poses.length>0;
+  $('#kino-grid').innerHTML=state.poses.map(p=>{
+    const lab=t('lab.'+p.label), src=p.demo?'demo':(p.src||'manual');
+    return '<figure class="pose"><div class="imgwrap"><img alt="'+esc(t('poseAlt',lab,fx(p.t,3)))+'" src="'+p.img+'"><span class="tag">'+(p.demo?t('example')+' · ':'')+lab+(p.side?' · '+t('s'+p.side):'')+'</span>'+
+    (src==='gemini'?'<span class="src">✦ Gemini</span>':'')+'</div>'+
+    '<figcaption><div class="row"><b class="num">'+fx(p.t,3)+' '+t('s')+'</b><button class="link" type="button" data-del="'+p.id+'">'+t('del')+'</button></div>'+
+    '<dl class="mini"><div><dt>'+t('m.trunk')+'</dt><dd>'+fx(p.m.lean,0)+'°</dd></div><div><dt>'+t('m.thigh')+'</dt><dd>'+fx(p.m.thigh,0)+'°</dd></div><div><dt>'+t('m.knee')+'</dt><dd>'+fx(p.m.knee,0)+'°</dd></div><div><dt>'+t('m.ankle')+'</dt><dd>'+fx(p.m.ankle,0)+'°</dd></div><div><dt>'+t('m.foot')+'</dt><dd>'+fx(p.m.footAhead,2)+'</dd></div><div><dt>'+t('jointsBy')+'</dt><dd>'+t('src'+src)+'</dd></div></dl></figcaption></figure>';
+  }).join('');
+}
+$('#kino-grid').addEventListener('click',e=>{
+  const b=e.target.closest('[data-del]'); if(!b) return;
+  const id=Number(b.dataset.del);
+  state.poses=state.poses.filter(p=>p.id!==id); state.coach=null; renderKino(); renderReport();
+});
+
+/* ---------- rules and report ---------- */
+function computePhase(){
+  if(state.phaseMode!=='auto') return state.phaseMode;
+  if(state.coach&&(state.coach.phase==='top'||state.coach.phase==='accel')) return state.coach.phase;
+  const leans=state.poses.filter(p=>p.label==='Touchdown'||p.label==='Toe-off').map(p=>p.m.lean);
+  return leans.length&&mean(leans)>20?'accel':'top';
+}
+function leanRule(phase){
+  const top=phase==='top', k=top?'top':'acc';
+  return {name:'r.lean.name',get:m=>m.lean,
+    fmt:v=>v>=0?t('fwd',fx(v,0)):t('back',fx(Math.abs(v),0)),
+    good:top?[0,12]:[25,50], ok:top?[-4,20]:[15,60], target:'r.lean.'+k+'.t',
+    low:{cue:'r.lean.'+k+'.lo',drill:'r.lean.'+k+'.lod'}, high:{cue:'r.lean.'+k+'.hi',drill:'r.lean.hid'}};
+}
+function rulesFor(label,phase){
+  if(label==='Touchdown') return [
+    {name:'r.foot.name',get:m=>m.footAhead,
+      fmt:v=>v>=0?t('r.foot.ahead',fx(v,2)):t('r.foot.behind',fx(Math.abs(v),2)),
+      good:[-3,0.35],ok:[-3,0.6],target:'r.foot.t',
+      high:{cue:'r.foot.hi',drill:'r.foot.hid'},low:{cue:'r.foot.lo',drill:'r.foot.lod'}},
+    {name:'r.knee.name',get:m=>m.knee,fmt:v=>t('deg',fx(v,0)),good:[150,175],ok:[135,180],target:'r.knee.t',
+      low:{cue:'r.knee.lo',drill:'r.knee.lod'},high:{cue:'r.knee.hi',drill:'r.knee.hid'}},
+    {name:'r.ankle.name',get:m=>m.ankle,fmt:v=>t('deg',fx(v,0)),good:[75,105],ok:[65,115],target:'r.ankle.t',
+      high:{cue:'r.ankle.hi',drill:'r.ankle.hid'},low:{cue:'r.ankle.lo',drill:'r.ankle.lod'}},
+    leanRule(phase)
+  ];
+  if(label==='Toe-off') return [
+    {name:'r.kext.name',get:m=>m.knee,fmt:v=>t('deg',fx(v,0)),good:[155,180],ok:[140,180],target:'r.kext.t',
+      low:{cue:'r.kext.lo',drill:'r.kext.lod'},high:{cue:'outside',drill:null}},
+    {name:'r.hext.name',get:m=>m.thigh,
+      fmt:v=>v<0?t('r.hext.behind',fx(Math.abs(v),0)):t('r.hext.front',fx(v,0)),
+      good:[-90,-10],ok:[-90,0],target:'r.hext.t',
+      high:{cue:'r.hext.hi',drill:'r.hext.hid'},low:{cue:'outside',drill:null}},
+    leanRule(phase)
+  ];
+  if(label==='Knee drive') return [
+    {name:'r.klift.name',get:m=>m.thigh,fmt:v=>t('r.klift.fmt',fx(v,0)),good:[75,180],ok:[60,180],target:'r.klift.t',
+      low:{cue:'r.klift.lo',drill:'r.klift.lod'},high:{cue:'outside',drill:null}},
+    {name:'r.heel.name',get:m=>m.knee,fmt:v=>t('r.heel.fmt',fx(v,0)),good:[40,110],ok:[40,130],target:'r.heel.t',
+      high:{cue:'r.heel.hi',drill:'r.heel.hid'},low:{cue:'outside',drill:null}},
+    leanRule(phase)
+  ];
+  return [];
+}
+function rate(v,r){
+  const within=a=>v>=a[0]&&v<=a[1];
+  if(within(r.good)) return {status:'good'};
+  return {status:within(r.ok)?'ok':'work',side:v<r.good[0]?'low':'high'};
+}
+function contactItems(phase){
+  const tds=state.poses.filter(p=>p.label==='Touchdown'), tos=state.poses.filter(p=>p.label==='Toe-off');
+  const lim=phase==='top'?{g:120,o:150}:{g:190,o:230};
+  const out=[];
+  const frameMs=1000/(state.fps*state.slow);
+  tds.forEach(td=>{
+    const to=tos.filter(x=>x.t>td.t&&(x.t-td.t)/state.slow<0.5&&(!td.side||!x.side||x.side===td.side)).sort((a,b)=>a.t-b.t)[0];
+    let ms;
+    if(td.contactMs) ms=td.contactMs;
+    else if(to) ms=(to.t-td.t)*1000/state.slow;
+    else return;
+    out.push({name:t('r.contact.name')+(td.side?' · '+t('s'+td.side):''),ctx:to?t('r.contact.ctx',fx(td.t,3),fx(to.t,3)):'',
+      value:t('r.contact.v',fx(ms,0)),target:t('r.contact.t',lim.g),
+      status:ms<=lim.g?'good':ms<=lim.o?'ok':'work',
+      cue:t('r.contact.cue'),drill:t('r.contact.drill'),
+      note:frameMs>8?t('r.contact.note',fx(frameMs,0)):''});
+  });
+  const r=state.rhythm;
+  if(r&&r.nL&&r.nR){
+    const pctd=Math.abs(r.contactL-r.contactR)/((r.contactL+r.contactR)/2)*100;
+    out.push({name:t('r.sym.name'),ctx:t('hRhythm'),value:t('r.sym.v',fx(r.contactL,0),fx(r.contactR,0),fx(pctd,0)),
+      target:t('r.sym.t'),status:pctd<=8?'good':pctd<=15?'ok':'work',cue:t('r.sym.cue'),drill:t('r.sym.drill'),
+      note:r.res>8?t('r.contact.note',fx(r.res,0)):''});
+  }
+  return out;
+}
+function evaluate(phase){
+  const items=[];
+  state.poses.forEach(p=>{
+    rulesFor(p.label,phase).forEach(r=>{
+      const v=r.get(p.m), res=rate(v,r), adv=res.side?r[res.side]:null;
+      items.push({name:t(r.name),ctx:(p.demo?t('example')+' · ':'')+t('lab.'+p.label)+(p.side?' · '+t('s'+p.side):'')+' · '+fx(p.t,3)+' '+t('s'),
+        value:r.fmt(v),target:t(r.target),status:res.status,
+        cue:adv?t(adv.cue):'',drill:adv&&adv.drill?t(adv.drill):'',note:''});
+    });
+  });
+  return items.concat(contactItems(phase));
+}
+function checkHTML(it){
+  return '<article class="check"><header><h4>'+it.name+'</h4><span class="pill '+it.status+'">'+t('p'+it.status)+'</span></header>'+
+    (it.ctx?'<p class="ctx">'+it.ctx+'</p>':'')+
+    '<p><b class="num">'+it.value+'</b> · '+t('target')+' '+it.target+'</p>'+
+    (it.status!=='good'?'<p class="cue">'+it.cue+'</p>'+(it.drill?'<p class="drill"><b>'+t('drills')+'</b> '+it.drill+'</p>':''):'')+
+    (it.note?'<p class="drill">'+it.note+'</p>':'')+'</article>';
+}
+function renderRhythm(){
+  const box=$('#rhythm'), r=state.rhythm;
+  if(!r){ box.hidden=true; box.innerHTML=''; return; }
+  const cells=[['rhSteps',String(r.steps),'']];
+  if(r.contact) cells.push(['rhContact',fx(r.contact,0),t('ms')]);
+  if(r.nL&&r.nR){ cells.push(['rhCL',fx(r.contactL,0),t('ms')]); cells.push(['rhCR',fx(r.contactR,0),t('ms')]); }
+  if(r.flight) cells.push(['rhFlight',fx(r.flight,0),t('ms')]);
+  if(r.rate) cells.push(['rhRate',fx(r.rate,2),t('perS')]);
+  box.hidden=false;
+  box.innerHTML='<h3>'+t('hRhythm')+'</h3><dl class="metrics">'+cells.map(c=>'<div><dt>'+t(c[0])+'</dt><dd>'+c[1]+(c[2]?'<small>'+c[2]+'</small>':'')+'</dd></div>').join('')+'</dl>'+
+    '<p class="muted">'+t('rhNote',fx(r.res,0))+'</p>';
+}
+function renderReport(){
+  const phase=computePhase(); state.phase=phase;
+  $('#phase-auto').textContent=state.phaseMode==='auto'&&state.poses.length?t('phaseAutoIs',t(phase==='top'?'phTop':'phAcc')):'';
+  renderCoach(); renderRhythm();
+  const box=$('#report');
+  const items=evaluate(phase);
+  if(!items.length){
+    box.innerHTML='<div class="empty-note"><p>'+t(state.poses.length?'reportOther':'reportEmpty')+'</p><button class="btn js-demo" type="button">'+t('demoBtn')+'</button></div>';
+    return;
+  }
+  const good=items.filter(i=>i.status==='good').length;
+  const groups=[['work','gWork'],['ok','gClose'],['good','gGood']];
+  box.innerHTML='<div class="group">'+
+    '<div class="summary"><span class="big num">'+t('ofN',good,items.length)+'</span><span>'+t('checksOk')+'</span></div>'+
+    (state.poses.some(p=>p.demo)?'<p class="muted">'+t('reportDemo')+'</p>':'')+
+    groups.map(g=>{
+      const list=items.filter(i=>i.status===g[0]);
+      return list.length?'<h3>'+t(g[1])+' ('+list.length+')</h3>'+list.map(checkHTML).join(''):'';
+    }).join('')+
+    '<p class="muted">'+t('reportAltis')+'</p></div>';
+}
+
+/* ---------- Gemini coach ---------- */
+const COACH_SCHEMA={type:'OBJECT',properties:{
+  headline:{type:'STRING'},
+  summary:{type:'STRING'},
+  phase:{type:'STRING',enum:['top','accel','unclear']},
+  priorities:{type:'ARRAY',items:{type:'OBJECT',properties:{title:{type:'STRING'},why:{type:'STRING'},cue:{type:'STRING'},drills:{type:'STRING'}},required:['title','why','cue','drills']}},
+  strengths:{type:'ARRAY',items:{type:'STRING'}},
+  filming:{type:'STRING'},
+  confidence:{type:'STRING',enum:['high','medium','low']}
+},required:['headline','summary','phase','priorities','strengths','filming','confidence']};
+async function askCoach(outer,doneMsg,doneTone){
+  const scored=state.poses.filter(p=>CYCLE.indexOf(p.label)>=0);
+  if(!GEM.key||!scored.length||state.coachBusy) return;
+  const job=outer&&!outer.cancel?outer:{cancel:false,ctrl:new AbortController()};
+  state.coachBusy=true; state.coachErr=''; renderCoach();
+  if(outer) setProg(t('pCoach'),null);
+  const lang=state.lang, phase=computePhase();
+  const r1=v=>Math.round(v*10)/10;
+  const data={
+    phaseSetting:state.phaseMode==='auto'?'auto ('+phase+')':phase,
+    frameRate:state.fps, slowMotionFactor:state.slow,
+    keyFrames:scored.map(p=>({id:p.id,label:p.label,leg:p.side||'unknown',timeSeconds:r1(p.t),jointsFrom:p.demo?'example':p.src,
+      anglesDeg:{trunkLeanForward:r1(p.m.lean),thighFromVertical:r1(p.m.thigh),kneeInterior:r1(p.m.knee),shinFromVertical:r1(p.m.shin),ankleInterior:r1(p.m.ankle)},
+      footAheadOfHipInThighLengths:Math.round(p.m.footAhead*100)/100})),
+    checks:evaluate(phase).map(i=>({check:i.name,where:i.ctx,value:i.value,target:i.target,status:i.status})),
+    rhythm:state.rhythm?{steps:state.rhythm.steps,contactMsAvg:Math.round(state.rhythm.contact),contactMsLeft:Math.round(state.rhythm.contactL)||null,contactMsRight:Math.round(state.rhythm.contactR)||null,flightMsAvg:Math.round(state.rhythm.flight),stepsPerSecond:r1(state.rhythm.rate)}:null
+  };
+  const prompt='You are an experienced sprint coach who uses the ALTIS kinogram method. Below are angles measured from joint points on key frames of a side-view sprint video, the automatic checks, and the rhythm data. The attached images are the kinogram frames with the joint skeleton drawn in gold, in the same order as keyFrames.\n'+
+    'Write a short coaching report in '+(lang==='ru'?'Russian':'English')+'. Rules:\n'+
+    '- headline: one sentence, the single most important takeaway.\n- summary: 2 to 3 sentences.\n'+
+    '- priorities: at most 3, most important first. Each with a short title, why it matters (cite the numbers), one simple cue, and 2 to 3 drills.\n'+
+    '- Look for root causes (mobility, strength, posture) rather than only repeating cues. Avoid cues that force full extension or clawing. Compare left and right legs when both are present.\n'+
+    '- strengths: 1 to 3 things that already look good.\n'+
+    '- filming: one sentence on video quality. If a skeleton in an image is clearly not on the athlete\'s joints, say which frame so the user can drag the points.\n'+
+    '- phase: whether this looks like top speed or acceleration.\n- Plain words, no markdown.\n\nDATA:\n'+JSON.stringify(data);
+  const parts=[{text:prompt}];
+  scored.slice(0,6).forEach(p=>{ parts.push({text:'Frame id '+p.id+': '+p.label+(p.side?' ('+p.side+')':'')}); parts.push({inlineData:{mimeType:'image/jpeg',data:p.img.split(',')[1]}}); });
+  try{
+    const r=await gemini(parts,COACH_SCHEMA,job.ctrl.signal);
+    r.lang=lang; r.model=GEM.model;
+    state.coach=r;
+  }catch(e){
+    if(!(job.cancel||e.name==='AbortError')) state.coachErr=e.message;
+  }finally{
+    state.coachBusy=false; renderReport();
+    if(outer&&doneMsg){ setProg(doneMsg,1,doneTone); hideProgIfDone(); }
+  }
+}
+function hideProgIfDone(){ const p=$('#prog'); if(p.dataset.tone==='good') setTimeout(()=>{ if(!state.job&&$('#prog').dataset.tone==='good') hideProg(); },4000); }
+function renderCoach(){
+  const box=$('#coach');
+  const scored=state.poses.filter(p=>CYCLE.indexOf(p.label)>=0);
+  if(!scored.length&&!state.coach){ box.hidden=true; box.innerHTML=''; return; }
+  box.hidden=false;
+  let h='<h3>'+t('hCoach')+'</h3>';
+  const c=state.coach;
+  if(state.coachBusy){
+    h+='<p class="muted">'+t('cBusy')+'</p><div class="track ind"><i></i></div>';
+  } else if(c){
+    h+='<p class="quote">'+esc(c.headline)+'</p><p>'+esc(c.summary)+'</p>';
+    if(c.priorities&&c.priorities.length){
+      h+='<div class="lbl">'+t('cPri')+'</div><ol>'+c.priorities.slice(0,3).map(p=>'<li><b>'+esc(p.title)+'</b><p>'+esc(p.why)+'</p><p><span class="lbl">'+t('cCue')+'</span> '+esc(p.cue)+'</p><p class="muted"><span class="lbl">'+t('cDrills')+'</span> '+esc(p.drills)+'</p></li>').join('')+'</ol>';
+    }
+    if(c.strengths&&c.strengths.length) h+='<div class="lbl">'+t('cStr')+'</div><ul>'+c.strengths.slice(0,3).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>';
+    if(c.filming) h+='<div class="lbl">'+t('cFilm')+'</div><p class="muted">'+esc(c.filming)+'</p>';
+    h+='<p class="muted">'+t('cConf',t('conf'+(c.confidence||'medium')))+' · '+esc(c.model)+' · '+t('cAi')+'</p>';
+    if(c.lang!==state.lang) h+='<p class="muted">'+t('cLang')+'</p>';
+    h+='<div class="row"><button class="btn" type="button" id="coach-go">'+t('coachAgain')+'</button></div>';
+  } else {
+    h+='<p class="muted">'+t('coachIntro')+'</p>';
+    if(state.coachErr) h+='<p class="err">'+esc(t('gBad',state.coachErr))+'</p>';
+    h+=GEM.key?'<div class="row"><button class="btn gold" type="button" id="coach-go">✦ '+t('coachBtn')+'</button></div>'
+      :'<p class="muted">'+t('gNoKey')+'</p>';
+  }
+  box.innerHTML=h;
+  const go=$('#coach-go'); if(go) go.addEventListener('click',()=>askCoach(null));
+}
+
+/* ---------- example data ---------- */
+function loadDemo(){
+  const vw=600, vh=800, GROUND=572;
+  const defs=[
+    {label:'Touchdown',t:1.25,p:[[300,170],[292,330],[330,440],[352,560],[380,568]]},
+    {label:'Toe-off',t:1.34,p:[[310,175],[290,335],[262,455],[225,562],[205,575]]},
+    {label:'Knee drive',t:1.45,p:[[305,170],[298,330],[385,320],[325,415],[345,440]]}
+  ];
+  state.poses=defs.map(d=>{
+    const p=d.p.map(a=>({x:a[0],y:a[1]}));
+    const img=thumb(p,vw,vh,(g,c)=>{
+      const gr=g.createLinearGradient(0,0,0,TH); gr.addColorStop(0,'#211D17'); gr.addColorStop(1,'#110F0C');
+      g.fillStyle=gr; g.fillRect(0,0,TW,TH);
+      const s=TW/c.w, gy=(GROUND-c.y)*s;
+      g.fillStyle='#2B261E'; g.fillRect(0,gy,TW,TH-gy);
+      g.fillStyle='#6F5B36'; g.fillRect(0,gy,TW,2);
+    });
+    return {id:state.nextId++,label:d.label,t:d.t,m:metrics(p,1),img:img,demo:true,side:null,src:'demo'};
+  });
+  state.poses.sort((a,b)=>a.t-b.t);
+  state.coach=null; state.coachErr='';
+  renderKino(); renderReport();
+  toast(t('toastDemo'));
+}
+document.addEventListener('click',e=>{ if(e.target.closest('.js-demo')) loadDemo(); });
+
+/* ---------- start ---------- */
+let startLang='en';
+try{
+  const saved=localStorage.getItem('stridelab-lang');
+  if(saved==='ru'||saved==='en') startLang=saved;
+  else if(((navigator.languages&&navigator.languages[0])||navigator.language||'').slice(0,2)==='ru') startLang='ru';
+}catch(e){}
+if(!GEM.key) $('#gem-box').open=true;
+setLang(startLang);
+loadModel();
+})();
+</script>
+
+</body>
+</html>
