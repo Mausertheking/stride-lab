@@ -12,10 +12,11 @@ Film a sprint from the side and Stride Lab:
 
 ## How the joints are placed
 
-1. The on-device pose model (MediaPipe **heavy**) tracks every person in frame and follows the one who moves the most, so a standing coach or spectators are ignored.
+1. The on-device pose model (MediaPipe **heavy**) tracks every person in frame and follows the one with the fastest leg action relative to the hip, so a standing coach, spectators or people walking after the race are ignored (works with a panning camera too).
 2. On each key frame, **Gemini Flash** places the shoulder and the hip, knee, ankle, heel and toe of **both legs** on a sharp crop of the sprinter.
 3. Where the pose model and Gemini agree, the point is averaged; where they disagree (backlight, motion blur) Gemini is used. If Gemini's crop shows the wrong person, it searches the whole frame for the sprinter.
-4. The stance leg is used for touchdown and toe-off, the swing leg for knee drive; the other leg is drawn in silver-blue so a wrong point is easy to spot and drag.
+4. **Hip:** in a side view both hip joints overlap, so both thighs share one hip point: the average of Gemini's two hip points and the pose model's hip (moved down 0.1 thigh length, because the pose model puts it on the waistband). Heel and toe come from Gemini (ball of the foot inside the shoe).
+5. The stance leg is used for touchdown and toe-off, the swing leg for knee drive; the other leg is drawn in silver-blue so a wrong point is easy to spot and drag.
 
 Tested on real race video (4K HEVC, 30–240 fps, block starts, a coach and spectators in frame). Against hand-marked knee and ankle positions, Flash-Lite was off by ~80% of a thigh length on average, the old lite pose model ~15%, the heavy model and Gemini Flash ~7–9%.
 

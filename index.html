@@ -792,9 +792,14 @@ async function gemAthleteBox(signal){
 /* Step 2: Gemini places the shoulder and both legs on a sharp crop of the sprinter. Points come back normalized to the whole frame. */
 async function gemPose(o){
   const box=o.box;
-  const prompt='Side-view sprint frame (cropped around the sprinter). Locate joint CENTRES (not clothing or shoe edges) for the sprinter only:\n'+
-    '- shoulder: centre of the shoulder joint nearest the camera\n'+
-    'For BOTH legs: hip = hip joint centre (greater trochanter, on the side of the pelvis, below the waistband); knee = centre of the knee joint; ankle = centre of the ankle joint (malleolus); heel = back of the heel; toe = ball of the foot (metatarsal heads).\n'+
+  const prompt='Side-view sprint frame (cropped around the sprinter). Mark anatomical joint CENTRES for the sprinter only (not clothing edges, not shoe edges):\n'+
+    '- shoulder: centre of the shoulder joint nearest the camera (top of the upper arm).\n'+
+    'For BOTH legs:\n'+
+    '- hip: hip joint centre (greater trochanter, on the side of the pelvis below the waistband; not the waistband, not the front of the belly).\n'+
+    '- knee: centre of the knee joint (middle of the knee, between the kneecap and the back of the knee).\n'+
+    '- ankle: centre of the ankle bone (malleolus), just above the shoe collar.\n'+
+    '- heel: back of the heel, on the sole.\n'+
+    '- toe: ball of the foot (metatarsal heads) INSIDE the shoe: on the sole, about two thirds of the way from the heel to the shoe tip, in the direction the shoe points. Not the shoe tip, not below the shoe.\n'+
     'front = the leg whose foot is further forward in the running direction; rear = the other leg. facing = the running direction in the image.\n'+
     (o.label?'This frame was picked as a '+o.label+' frame. Confirm or correct the label.\n':'Also classify the frame.\n')+
     'label: Touchdown = first frame the front foot touches the ground. Toe-off = last frame the rear foot touches the ground. Knee drive = swing thigh at or near its highest point with the foot off the ground. Other = anything else.\n'+
@@ -810,11 +815,30 @@ async function gemPoseAnywhere(o){
   if(!box) return null;
   return gemPose(Object.assign({},o,{box:box,b64:null}));
 }
+/* Pose-model hip, moved off the waistband: on real race frames it sat ~0.1 thigh length above the hip joint centre. */
+function mpHip(lm){
+  const H={x:(lm[23].x+lm[24].x)/2,y:(lm[23].y+lm[24].y)/2}, S={x:(lm[11].x+lm[12].x)/2,y:(lm[11].y+lm[12].y)/2};
+  const px=q=>({x:q.x*state.vw,y:q.y*state.vh});
+  const h=px(H), s=px(S), th=(Math.hypot(px(lm[25]).x-px(lm[23]).x,px(lm[25]).y-px(lm[23]).y)+Math.hypot(px(lm[26]).x-px(lm[24]).x,px(lm[26]).y-px(lm[24]).y))/2;
+  const L=Math.hypot(s.x-h.x,s.y-h.y)||1, ux=(s.x-h.x)/L, uy=(s.y-h.y)/L;
+  return {x:clamp01((h.x-0.1*th*ux)/state.vw),y:clamp01((h.y-0.1*th*uy)/state.vh)};
+}
+/* Ball of the foot from the pose model's heel and toe tip. */
+function mpBall(lm,s){ const he=lm[MPI.heel[s]], tp=lm[MPI.toe[s]]; return {x:clamp01(he.x+0.72*(tp.x-he.x)),y:clamp01(he.y+0.72*(tp.y-he.y))}; }
+/* Shoulder, hip, knee, ankle, ball of foot for one side (0 = left, 1 = right) plus the other leg, from the pose model. */
+function mpChain(lm,s){
+  const P=i=>({x:clamp01(lm[i].x),y:clamp01(lm[i].y)}), o=1-s, hip=mpHip(lm);
+  return {pts:[P(s?12:11),hip,P(MPI.knee[s]),P(MPI.ankle[s]),mpBall(lm,s)],other:[{x:hip.x,y:hip.y},P(MPI.knee[o]),P(MPI.ankle[o]),mpBall(lm,o)]};
+}
 /* Combine Gemini with the pose model: where both agree the point is averaged, where they disagree Gemini wins
    (it held up on backlit and blurred frames where the pose model drifted). */
 const MPI={hip:[23,24],knee:[25,26],ankle:[27,28],heel:[29,30],toe:[31,32]};
 function fusePose(g,lm){
-  if(!lm) return Object.assign({fused:false},g);
+  if(!lm){
+    const hip={x:(g.front.hip.x+g.rear.hip.x)/2,y:(g.front.hip.y+g.rear.hip.y)/2};
+    const o=Object.assign({fused:false},g,{front:Object.assign({},g.front,{hip:hip}),rear:Object.assign({},g.rear,{hip:{x:hip.x,y:hip.y}})});
+    return o;
+  }
   const P=i=>({x:lm[i].x,y:lm[i].y,v:lm[i].v==null?1:lm[i].v});
   const dpx=(a,b)=>Math.hypot((a.x-b.x)*state.vw,(a.y-b.y)*state.vh);
   const legD=(s,leg)=>dpx(P(MPI.knee[s]),g[leg].knee)+dpx(P(MPI.ankle[s]),g[leg].ankle);
@@ -822,7 +846,17 @@ function fusePose(g,lm){
   const th=Math.max(dpx(g.front.hip,g.front.knee),dpx(g.rear.hip,g.rear.knee),1);
   const mix=(a,b)=>(a.v>=0.5&&dpx(a,b)<0.25*th)?{x:(a.x+b.x)/2,y:(a.y+b.y)/2}:{x:b.x,y:b.y};
   const out={facing:g.facing,label:g.label,front:{},rear:{},mpSide:{front:sF,rear:1-sF},fused:true};
-  ['front','rear'].forEach(leg=>{ const s=out.mpSide[leg]; LEG_KEYS.forEach(j=>{ out[leg][j]=mix(P(MPI[j][s]),g[leg][j]); }); });
+  ['front','rear'].forEach(leg=>{ const s=out.mpSide[leg];
+    ['knee','ankle'].forEach(j=>{ out[leg][j]=mix(P(MPI[j][s]),g[leg][j]); });
+    // The pose model's toe is the toe tip, Gemini's is the ball of the foot: keep Gemini's definition.
+    ['heel','toe'].forEach(j=>{ out[leg][j]={x:g[leg][j].x,y:g[leg][j].y}; }); });
+  // Hip: in a side view both hip joints overlap, so both thighs share one point. Gemini's two hips and the
+  // pose model's hip (which sits on the waistband, so it is moved down 0.1 thigh) are averaged.
+  const gh={x:(g.front.hip.x+g.rear.hip.x)/2,y:(g.front.hip.y+g.rear.hip.y)/2};
+  const mh=mpHip(lm), hs=[g.front.hip,g.rear.hip];
+  if(mh&&dpx(mh,gh)<0.4*th) hs.push(mh);
+  const hip={x:mean(hs.map(q=>q.x)),y:mean(hs.map(q=>q.y))};
+  out.front.hip=hip; out.rear.hip={x:hip.x,y:hip.y};
   const s0=P(11), s1=P(12);
   out.sh=mix(dpx(s0,g.sh)<=dpx(s1,g.sh)?s0:s1,g.sh);
   return out;
@@ -921,10 +955,21 @@ function assignTrack(frames){
       if(best) best.items.push({k:k,b:b,c:c}); else tracks.push({items:[{k:k,b:b,c:c}]});
     });
   });
+  // Sprinter = fastest leg action relative to the hip (camera panning does not matter); a walker scores ~3x lower,
+  // a standing coach ~0. Size and time in view count too, but less.
   let win=null,ws=-1;
+  const slow=state.slow||1;
   tracks.forEach(tr=>{
-    const hs=tr.items.map(i=>i.b.h), xs=tr.items.map(i=>i.b.cx), mh=mean(hs);
-    const score=tr.items.length*mh*(1+(Math.max(...xs)-Math.min(...xs))/Math.max(mh,0.02));
+    const it=tr.items; if(it.length<3) return;
+    const mh=mean(it.map(i=>i.b.h)); let mv=0, tt=0;
+    for(let i=1;i<it.length;i++){
+      const a=it[i-1].c, b=it[i].c, dtt=(frames[it[i].k].t-frames[it[i-1].k].t)/slow; if(dtt<=0||dtt>0.25) continue;
+      const rel=(c,j)=>(c[j].x-(c[23].x+c[24].x)/2)*state.vw, relY=(c,j)=>(c[j].y-(c[23].y+c[24].y)/2)*state.vh;
+      let d=0; [27,28].forEach(j=>{ d+=Math.hypot(rel(b,j)-rel(a,j),relY(b,j)-relY(a,j)); });
+      mv+=d/Math.max(mh*state.vh,1); tt+=dtt;
+    }
+    const speed=tt>0?mv/tt:0;
+    const score=Math.sqrt(it.length)*mh*(1+4*speed);
     if(score>ws){ws=score;win=tr;}
   });
   frames.forEach(f=>{ f.lm=null; });
@@ -950,8 +995,8 @@ function applyLandmarks(lm){
     if(state.dirMode==='auto') state.autoDir=state.dirAcc>=0?1:-1;
   }
   if(score(side)<0.3){ state.pts=[]; state.pts2=[]; return false; }
-  state.pts=SIDE_IDX[side].map(i=>({x:clamp01(lm[i].x),y:clamp01(lm[i].y)}));
-  state.pts2=OTHER_IDX[side].map(i=>({x:clamp01(lm[i].x),y:clamp01(lm[i].y)}));
+  const ch=mpChain(lm,side==='L'?0:1);
+  state.pts=ch.pts; state.pts2=ch.other;
   state.ptsSrc='pose';
   return true;
 }
@@ -1396,7 +1441,7 @@ function findEvents(sc){
     }
     if(best&&best.k>s.a&&best.k<end) s.kd=best;
   });
-  const chain=(k,s)=>{ const f=F[k]; const ids=[LMI.sh[s],LMI.hip[s],LMI.knee[s],LMI.ank[s],LMI.toe[s]]; const o=1-s, oth=[LMI.hip[o],LMI.knee[o],LMI.ank[o],LMI.toe[o]]; const P=i=>({x:clamp01(f.lm[i].x),y:clamp01(f.lm[i].y)}); return {pts:ids.map(P),other:oth.map(P),vis:mean(ids.map(i=>f.lm[i].v))}; };
+  const chain=(k,s)=>{ const f=F[k], c=mpChain(f.lm,s); const ids=[LMI.sh[s],LMI.hip[s],LMI.knee[s],LMI.ank[s],LMI.toe[s]]; return {pts:c.pts,other:c.other,vis:mean(ids.map(i=>f.lm[i].v))}; };
   const picked=[];
   const sides=state.side==='left'?['L']:state.side==='right'?['R']:['L','R'];
   sides.forEach(X=>{
