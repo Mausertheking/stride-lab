@@ -269,8 +269,8 @@ details.ref ul{margin:0;padding:12px 0 14px 18px;display:flex;flex-direction:col
         <div class="field">
           <label for="gem-model" data-i18n="gModel"></label>
           <select id="gem-model">
-            <option value="gemini-flash-lite-latest" data-i18n="gmLite"></option>
             <option value="gemini-flash-latest" data-i18n="gmFlash"></option>
+            <option value="gemini-flash-lite-latest" data-i18n="gmLite"></option>
           </select>
         </div>
         <p class="muted" data-i18n="gCost"></p>
@@ -480,10 +480,10 @@ const D={
   tip5:['If your phone saved slow motion that plays slowed down, set Clip speed so the times are real.','Если телефон сохранил слоу-мо, которое воспроизводится замедленно, укажите скорость клипа, чтобы время было реальным.'],
 
   gTitle:['Gemini AI','Gemini AI'], gOn:['On','Вкл'], gOff:['Off','Выкл'],
-  gIntro:['Gemini looks at each key frame, places the shoulder, hip, knee, ankle and toe, and writes the coach notes. The angles are then measured from its points. Paste a Gemini API key to turn it on.','Gemini смотрит на каждый ключевой кадр, ставит плечо, бедро, колено, голеностоп и носок и пишет заметки тренера. Углы измеряются по его точкам. Вставьте ключ Gemini API, чтобы включить.'],
+  gIntro:['Gemini finds the sprinter (not the coach or spectators), places the shoulder and the hip, knee, ankle and toe of both legs on each key frame, and checks them against the on-device pose model. Where both agree the points are averaged; where they disagree Gemini is used. Paste a Gemini API key to turn it on.','Gemini находит спринтера (а не тренера или зрителей), ставит плечо и таз, колено, голеностоп и носок обеих ног на каждом ключевом кадре и сверяет их с моделью позы на устройстве. Где они согласны, точки усредняются, где расходятся, берётся Gemini. Вставьте ключ Gemini API, чтобы включить.'],
   gKey:['Gemini API key','Ключ Gemini API'], gKeyPh:['Paste your key','Вставьте ключ'], gSave:['Save','Сохранить'],
-  gModel:['Model','Модель'], gmLite:['Flash-Lite · cheapest (recommended)','Flash-Lite · самая дешёвая (рекомендуется)'], gmFlash:['Flash · a little more precise','Flash · чуть точнее'],
-  gCost:['Low cost: about 1,300 tokens per frame with Flash-Lite. A full analysis uses about 8 calls.','Недорого: около 1 300 токенов на кадр с Flash-Lite. Полный анализ это примерно 8 запросов.'],
+  gModel:['Model','Модель'], gmLite:['Flash-Lite · cheapest, joints less precise','Flash-Lite · самая дешёвая, суставы менее точно'], gmFlash:['Flash · precise joints (recommended)','Flash · точные суставы (рекомендуется)'],
+  gCost:['Still low cost: about 2,500 tokens per key frame with Flash, about 8 requests for a full analysis. Flash-Lite is cheaper but placed joints far less precisely on real race video.','Всё ещё недорого: около 2 500 токенов на ключевой кадр с Flash, около 8 запросов на полный анализ. Flash-Lite дешевле, но на реальных видео забегов ставил суставы намного менее точно.'],
   gGet:['Get a key in Google AI Studio','Получить ключ в Google AI Studio'],
   gPriv:['The key is kept only in this browser and sent only to Google.','Ключ хранится только в этом браузере и отправляется только в Google.'],
   gTest:['Test key','Проверить ключ'], gForget:['Remove key','Удалить ключ'], gTesting:['Testing…','Проверяю…'],
@@ -541,7 +541,7 @@ const D={
   kinoEmpty:['Key frames line up here in time order, each with its angles. Run the automatic analysis, or save a touchdown, a toe-off and a knee drive by hand.','Ключевые кадры выстраиваются здесь по времени, каждый с углами. Запустите автоанализ или сохраните касание, отталкивание и подъём колена вручную.'],
   demoBtn:['Load example poses','Загрузить примеры поз'],
   del:['Delete','Удалить'], example:['Example','Пример'],
-  srcgemini:['Gemini','Gemini'], srcpose:['Pose model','Модель позы'], srcmanual:['Manual','Вручную'], srcdemo:['Example','Пример'],
+  srcgemini:['Gemini','Gemini'], srcfused:['Pose model + Gemini','Модель позы + Gemini'], srcpose:['Pose model','Модель позы'], srcmanual:['Manual','Вручную'], srcdemo:['Example','Пример'],
   jointsBy:['Joints','Суставы'],
   poseAlt:[(l,t)=>l+' pose at '+t+' seconds',(l,t)=>'Поза: '+l+', '+t+' с'],
   toastSaved:[(l,t)=>'Saved '+l+' at '+t+' s',(l,t)=>'Сохранено: '+l+', '+t+' с'],
@@ -669,7 +669,7 @@ const JOINTS=5, CYCLE=['Touchdown','Toe-off','Knee drive'];
 const SKEL='#F0CF88', TW=360, TH=480;
 const state={
   ready:false,vw:0,vh:0,dirMode:'auto',autoDir:1,dirAcc:0,phaseMode:'auto',phase:'top',fps:30,fpsMode:'auto',fpsDetected:0,slow:1,speed:0.5,
-  pts:[],active:-1,drag:null,label:'Touchdown',poses:[],nextId:1,url:null,fname:'',lang:'en',
+  pts:[],pts2:[],track:null,active:-1,drag:null,label:'Touchdown',poses:[],nextId:1,url:null,fname:'',lang:'en',
   model:'loading',side:'auto',lastSide:'L',found:false,ptsSrc:'',lastDetT:-1,lastLm:null,
   job:null,scanning:false,pendingAuto:false,rhythm:null,coach:null,coachBusy:false,coachErr:'',autoRun:true
 };
@@ -715,15 +715,16 @@ function metrics(p,dir){
 }
 
 /* ---------- Gemini ---------- */
-const GEM={key:'',model:'gemini-flash-lite-latest'};
-const GEM_MODELS=['gemini-flash-lite-latest','gemini-flash-latest'];
+// Tested on real race video: Flash-Lite misplaced joints badly, Flash was ~10x closer, so Flash is the default.
+const GEM={key:'',model:'gemini-flash-latest'};
+const GEM_MODELS=['gemini-flash-latest','gemini-flash-lite-latest'];
 try{
   const g=JSON.parse(localStorage.getItem('stridelab-gemini')||'{}');
   if(g.key) GEM.key=g.key;
-  if(GEM_MODELS.indexOf(g.model)>=0) GEM.model=g.model;
+  if(g.v===2&&GEM_MODELS.indexOf(g.model)>=0) GEM.model=g.model;
   if(g.autoRun===false) state.autoRun=false;
 }catch(e){}
-function saveGem(){ try{localStorage.setItem('stridelab-gemini',JSON.stringify({key:GEM.key,model:GEM.model,autoRun:state.autoRun}));}catch(e){} }
+function saveGem(){ try{localStorage.setItem('stridelab-gemini',JSON.stringify({key:GEM.key,model:GEM.model,autoRun:state.autoRun,v:2}));}catch(e){} }
 
 async function gemini(parts,schema,signal){
   if(!GEM.key) throw new Error(t('gNoKey'));
@@ -751,72 +752,110 @@ async function gemini(parts,schema,signal){
   }
 }
 const PT={type:'OBJECT',properties:{x:{type:'NUMBER'},y:{type:'NUMBER'}},required:['x','y']};
-const JOINT_SCHEMA={type:'OBJECT',properties:{
+const LEG_KEYS=['hip','knee','ankle','heel','toe'];
+const LEG_SCHEMA={type:'OBJECT',properties:{hip:PT,knee:PT,ankle:PT,heel:PT,toe:PT},required:LEG_KEYS};
+const POSE_SCHEMA={type:'OBJECT',properties:{
   found:{type:'BOOLEAN'},
+  facing:{type:'STRING',enum:['right','left']},
   label:{type:'STRING',enum:['Touchdown','Toe-off','Knee drive','Other']},
-  leg:{type:'STRING',enum:['left','right','unclear']},
-  facing:{type:'STRING',enum:['right','left','unclear']},
-  shoulder:PT,hip:PT,knee:PT,ankle:PT,toe:PT,
-  confidence:{type:'NUMBER'}
-},required:['found','label','leg','facing','shoulder','hip','knee','ankle','toe','confidence']};
+  shoulder:PT,front:LEG_SCHEMA,rear:LEG_SCHEMA
+},required:['found','facing','label','shoulder','front','rear']};
+const BOX_SCHEMA={type:'OBJECT',properties:{found:{type:'BOOLEAN'},ymin:{type:'NUMBER'},xmin:{type:'NUMBER'},ymax:{type:'NUMBER'},xmax:{type:'NUMBER'}},
+  required:['found','ymin','xmin','ymax','xmax']};
 
 function grab(box,maxDim){
   const s=Math.min(1,maxDim/Math.max(box.w,box.h));
   const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(box.w*s)); c.height=Math.max(1,Math.round(box.h*s));
   c.getContext('2d').drawImage(video,box.x,box.y,box.w,box.h,0,0,c.width,c.height);
-  return c.toDataURL('image/jpeg',0.86).split(',')[1];
+  return c.toDataURL('image/jpeg',0.9).split(',')[1];
 }
 function fullBox(){ return {x:0,y:0,w:state.vw,h:state.vh}; }
-function boxAround(pts,padK){ // pts normalized
-  const xs=pts.map(p=>p.x*state.vw), ys=pts.map(p=>p.y*state.vh);
-  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
-  const side=Math.max(x1-x0,y1-y0)*padK, cx=(x0+x1)/2, cy=(y0+y1)/2;
-  const w=Math.min(state.vw,Math.max(side,state.vh*0.25)), h=Math.min(state.vh,Math.max(side,state.vh*0.25));
+/* Square crop (in video pixels) around a box, padded, clamped to the frame. */
+function padBox(x0,y0,x1,y1,pad){
+  const cx=(x0+x1)/2, cy=(y0+y1)/2;
+  const s=Math.min(Math.max(state.vw,state.vh),Math.max(x1-x0,y1-y0,state.vh*0.12)*pad);
+  const w=Math.min(state.vw,s), h=Math.min(state.vh,s);
   return {x:Math.max(0,Math.min(state.vw-w,cx-w/2)),y:Math.max(0,Math.min(state.vh-h,cy-h/2)),w:w,h:h};
 }
-function lmBox(lm){ return boxAround(lm.filter(p=>p.v===undefined||p.v>0.3).map(p=>({x:p.x,y:p.y})),1.45); }
-
-function legText(leg){
-  if(leg==='left') return "Use the athlete's LEFT leg and left shoulder.";
-  if(leg==='right') return "Use the athlete's RIGHT leg and right shoulder.";
-  if(leg==='stance') return 'Use the stance leg: the leg whose foot is on, or closest to, the ground.';
-  if(leg==='swing') return 'Use the swing leg: the leg with the knee in front and the foot off the ground.';
-  return 'If the frame shows touchdown or toe-off, use the stance leg (foot on the ground). For knee drive or flight, use the swing leg (knee in front).';
+function lmBox(lm){
+  const v=lm.filter(p=>p.v===undefined||p.v>0.3); if(!v.length) return fullBox();
+  const xs=v.map(p=>p.x*state.vw), ys=v.map(p=>p.y*state.vh);
+  return padBox(Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys),1.3);
 }
-/* Ask Gemini for the 5 joints. Returns {pts (normalized to the whole frame), label, facing, leg} or null. */
-async function gemJoints(o){
-  const box=o.box||fullBox(), cropped=!!o.box;
-  const prompt='You are a sprint biomechanics assistant. The image is one frame of side-view sprint video'+(cropped?' (cropped around the athlete)':'')+'.\n'+
-    'Locate these 5 points on ONE leg and the shoulder on the same side of the body:\n'+
-    '- shoulder: centre of the shoulder joint\n- hip: hip joint centre (greater trochanter), not the waistband\n- knee: centre of the knee joint\n- ankle: ankle joint centre (lateral malleolus)\n- toe: ball of the foot (metatarsal heads), not the tip of the shoe\n'+
-    'Leg: '+legText(o.leg)+'\n'+
-    (o.label?'This frame was picked as a '+o.label+' frame. Confirm or correct the label.\n':'Also classify the frame.\n')+
-    'Labels: Touchdown = first frame the front foot touches the ground. Toe-off = last frame the rear foot touches the ground. Knee drive = swing thigh at or near its highest point with the foot off the ground. Other = anything else.\n'+
-    'facing = the direction the athlete is running in the image. leg = which leg (athlete\'s left or right) you used.\n'+
-    'Coordinates: numbers from 0 to 1000, normalized to this image: x from the left edge, y from the top edge. Use joint centres, not clothing edges. If there is no person, set found=false.';
-  const r=await gemini([{text:prompt},{inlineData:{mimeType:'image/jpeg',data:o.b64||grab(box,768)}}],JOINT_SCHEMA,o.signal);
+/* Step 1 without the pose model: Gemini finds the sprinter, ignoring coaches and spectators. */
+async function gemAthleteBox(signal){
+  const r=await gemini([{text:'Find the sprinter in this frame: the athlete who is sprinting, starting or in the starting blocks. Ignore coaches, spectators and anyone standing or walking. Return the tight box around the whole sprinter as numbers 0-1000 (ymin, xmin, ymax, xmax) normalized to the image.'},
+    {inlineData:{mimeType:'image/jpeg',data:grab(fullBox(),1024)}}],BOX_SCHEMA,signal);
   if(!r||!r.found) return null;
-  const pts=['shoulder','hip','knee','ankle','toe'].map(k=>{
-    const p=r[k]||{x:0,y:0};
-    return {x:clamp01((box.x+(p.x/1000)*box.w)/state.vw), y:clamp01((box.y+(p.y/1000)*box.h)/state.vh)};
-  });
-  return {pts:pts,label:r.label,facing:r.facing,leg:r.leg,conf:r.confidence};
+  return padBox(r.xmin/1000*state.vw,r.ymin/1000*state.vh,r.xmax/1000*state.vw,r.ymax/1000*state.vh,1.25);
 }
-/* Full-frame call, then a sharper second call on a crop when the athlete is small in the frame. */
-async function gemJointsAnywhere(o){
-  let r=await gemJoints(Object.assign({},o,{box:null}));
-  if(!r) return null;
-  const b=boxAround(r.pts,2.0);
-  if(b.h<state.vh*0.7||b.w<state.vw*0.7){
-    const r2=await gemJoints(Object.assign({},o,{box:b,b64:null}));
-    if(r2) r=r2;
+/* Step 2: Gemini places the shoulder and both legs on a sharp crop of the sprinter. Points come back normalized to the whole frame. */
+async function gemPose(o){
+  const box=o.box;
+  const prompt='Side-view sprint frame (cropped around the sprinter). Locate joint CENTRES (not clothing or shoe edges) for the sprinter only:\n'+
+    '- shoulder: centre of the shoulder joint nearest the camera\n'+
+    'For BOTH legs: hip = hip joint centre (greater trochanter, on the side of the pelvis, below the waistband); knee = centre of the knee joint; ankle = centre of the ankle joint (malleolus); heel = back of the heel; toe = ball of the foot (metatarsal heads).\n'+
+    'front = the leg whose foot is further forward in the running direction; rear = the other leg. facing = the running direction in the image.\n'+
+    (o.label?'This frame was picked as a '+o.label+' frame. Confirm or correct the label.\n':'Also classify the frame.\n')+
+    'label: Touchdown = first frame the front foot touches the ground. Toe-off = last frame the rear foot touches the ground. Knee drive = swing thigh at or near its highest point with the foot off the ground. Other = anything else.\n'+
+    'Coordinates 0-1000 normalized to this image: x from the left, y from the top. Be precise to the joint centre. If there is no sprinter, set found=false.';
+  const r=await gemini([{text:prompt},{inlineData:{mimeType:'image/jpeg',data:o.b64||grab(box,1024)}}],POSE_SCHEMA,o.signal);
+  if(!r||!r.found) return null;
+  const m=p=>({x:clamp01((box.x+((p&&p.x)||0)/1000*box.w)/state.vw),y:clamp01((box.y+((p&&p.y)||0)/1000*box.h)/state.vh)});
+  const leg=L=>{ const o2={}; LEG_KEYS.forEach(k=>{ o2[k]=m(L&&L[k]); }); return o2; };
+  return {facing:r.facing,label:r.label,sh:m(r.shoulder),front:leg(r.front),rear:leg(r.rear)};
+}
+async function gemPoseAnywhere(o){
+  const box=await gemAthleteBox(o.signal);
+  if(!box) return null;
+  return gemPose(Object.assign({},o,{box:box,b64:null}));
+}
+/* Combine Gemini with the pose model: where both agree the point is averaged, where they disagree Gemini wins
+   (it held up on backlit and blurred frames where the pose model drifted). */
+const MPI={hip:[23,24],knee:[25,26],ankle:[27,28],heel:[29,30],toe:[31,32]};
+function fusePose(g,lm){
+  if(!lm) return Object.assign({fused:false},g);
+  const P=i=>({x:lm[i].x,y:lm[i].y,v:lm[i].v==null?1:lm[i].v});
+  const dpx=(a,b)=>Math.hypot((a.x-b.x)*state.vw,(a.y-b.y)*state.vh);
+  const legD=(s,leg)=>dpx(P(MPI.knee[s]),g[leg].knee)+dpx(P(MPI.ankle[s]),g[leg].ankle);
+  const sF=(legD(0,'front')+legD(1,'rear'))<=(legD(1,'front')+legD(0,'rear'))?0:1;
+  const th=Math.max(dpx(g.front.hip,g.front.knee),dpx(g.rear.hip,g.rear.knee),1);
+  const mix=(a,b)=>(a.v>=0.5&&dpx(a,b)<0.25*th)?{x:(a.x+b.x)/2,y:(a.y+b.y)/2}:{x:b.x,y:b.y};
+  const out={facing:g.facing,label:g.label,front:{},rear:{},mpSide:{front:sF,rear:1-sF},fused:true};
+  ['front','rear'].forEach(leg=>{ const s=out.mpSide[leg]; LEG_KEYS.forEach(j=>{ out[leg][j]=mix(P(MPI[j][s]),g[leg][j]); }); });
+  const s0=P(11), s1=P(12);
+  out.sh=mix(dpx(s0,g.sh)<=dpx(s1,g.sh)?s0:s1,g.sh);
+  return out;
+}
+/* True when Gemini's legs sit far from the pose model's person: the crop was probably around someone else. */
+function poseDisagrees(g,lm){
+  if(!g||!lm) return false;
+  const dpx=(a,b)=>Math.hypot((a.x-b.x)*state.vw,(a.y-b.y)*state.vh);
+  const th=Math.max(dpx(g.front.hip,g.front.knee),dpx(g.rear.hip,g.rear.knee),1);
+  const ds=[];
+  ['front','rear'].forEach(leg=>['hip','knee','ankle'].forEach(j=>{ ds.push(Math.min(dpx(g[leg][j],lm[MPI[j][0]]),dpx(g[leg][j],lm[MPI[j][1]]))); }));
+  return median(ds)>0.6*th;
+}
+/* Pick the leg the checks need: stance leg for touchdown and toe-off, swing leg for knee drive. */
+function chainFor(P,mode,label,dir){
+  const low=L=>Math.max(L.heel.y,L.toe.y);
+  const thighF=L=>Math.atan2((L.knee.x-L.hip.x)*state.vw*dir,(L.knee.y-L.hip.y)*state.vh);
+  let pick=null;
+  if((mode==='left'||mode==='right')&&P.mpSide){ const want=mode==='left'?0:1; pick=P.mpSide.front===want?'front':'rear'; }
+  if(!pick){
+    const m=(mode==='stance'||mode==='swing')?mode:(label==='Knee drive'?'swing':'stance');
+    pick=m==='swing'?(thighF(P.front)>=thighF(P.rear)?'front':'rear'):(low(P.front)>=low(P.rear)?'front':'rear');
   }
-  return r;
+  const A=P[pick], B=P[pick==='front'?'rear':'front'];
+  return {pts:[P.sh,A.hip,A.knee,A.ankle,A.toe],other:[B.hip,B.knee,B.ankle,B.toe],
+    side:P.mpSide?(P.mpSide[pick]===0?'L':'R'):null};
 }
 
 /* ---------- AI pose model (MediaPipe, runs in the browser) ---------- */
 const LIB='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
-const MODEL_URL='https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+// Heavy model: on the race test frames it halved the joint error of the lite model and never lost the athlete.
+const MODEL_URLS=['https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task',
+  'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task'];
 let landmarker=null;
 function withTimeout(p,ms){
   return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
@@ -825,13 +864,16 @@ async function loadModel(){
   try{
     const mod=await withTimeout(import(LIB+'/vision_bundle.mjs'),30000);
     const fileset=await withTimeout(mod.FilesetResolver.forVisionTasks(LIB+'/wasm'),30000);
-    const make=delegate=>mod.PoseLandmarker.createFromOptions(fileset,{
-      baseOptions:{modelAssetPath:MODEL_URL,delegate:delegate},
-      runningMode:'IMAGE',numPoses:1,
-      minPoseDetectionConfidence:0.4,minPosePresenceConfidence:0.4,minTrackingConfidence:0.4
+    const make=(url,delegate)=>mod.PoseLandmarker.createFromOptions(fileset,{
+      baseOptions:{modelAssetPath:url,delegate:delegate},
+      runningMode:'IMAGE',numPoses:3,
+      minPoseDetectionConfidence:0.3,minPosePresenceConfidence:0.3,minTrackingConfidence:0.3
     });
-    try{ landmarker=await withTimeout(make('GPU'),45000); }
-    catch(e){ landmarker=await withTimeout(make('CPU'),45000); }
+    for(const url of MODEL_URLS){
+      try{ landmarker=await withTimeout(make(url,'GPU'),60000); break; }
+      catch(e){ try{ landmarker=await withTimeout(make(url,'CPU'),60000); break; }catch(e2){} }
+    }
+    if(!landmarker) throw new Error('no model');
     state.model='ready';
   }catch(e){
     state.model='failed';
@@ -842,11 +884,57 @@ async function loadModel(){
 }
 
 const SIDE_IDX={L:[11,23,25,27,31],R:[12,24,26,28,32]};
+const OTHER_IDX={L:[24,26,28,32],R:[23,25,27,31]};
 const clamp01=v=>Math.max(0,Math.min(1,v));
+const toLm=lm=>lm.map(p=>({x:p.x,y:p.y,v:p.visibility==null?1:p.visibility}));
+function lmBB(lm){
+  const v=lm.filter(p=>p.v>0.3); const a=v.length?v:lm;
+  const xs=a.map(p=>p.x), ys=a.map(p=>p.y);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  return {cx:(x0+x1)/2,cy:(y0+y1)/2,w:x1-x0,h:y1-y0};
+}
+/* Several people can be in frame (coach, other runners, spectators). Follow the athlete. */
+function pickCandidate(cands){
+  if(!cands||!cands.length) return null;
+  if(state.track&&state.track.length){
+    const tm=video.currentTime; let ref=state.track[0], bd=1e9;
+    state.track.forEach(q=>{ const d=Math.abs(q.t-tm); if(d<bd){bd=d;ref=q;} });
+    if(bd<0.5){
+      let best=null,bs=1e9;
+      cands.forEach(c=>{ const b=lmBB(c); const d=Math.hypot(b.cx-ref.cx,b.cy-ref.cy)/Math.max(ref.h,0.05); if(d<bs){bs=d;best=c;} });
+      if(best&&bs<1.2) return best;
+    }
+  }
+  return cands.slice().sort((a,b)=>{ const A=lmBB(a),B=lmBB(b); return B.w*B.h-A.w*A.h; })[0];
+}
+/* Link detections frame to frame and keep the person who moves the most: the sprinter, not the standing coach. */
+function assignTrack(frames){
+  const tracks=[];
+  frames.forEach((f,k)=>{
+    (f.cands||[]).forEach(c=>{
+      const b=lmBB(c); let best=null,bd=1e9;
+      tracks.forEach(tr=>{
+        const l=tr.items[tr.items.length-1]; if(l.k===k||k-l.k>12) return;
+        const d=Math.hypot(b.cx-l.b.cx,b.cy-l.b.cy)/Math.max(l.b.h,0.05), r=b.h/Math.max(l.b.h,1e-3);
+        if(d<0.6&&r>0.6&&r<1.6&&d<bd){bd=d;best=tr;}
+      });
+      if(best) best.items.push({k:k,b:b,c:c}); else tracks.push({items:[{k:k,b:b,c:c}]});
+    });
+  });
+  let win=null,ws=-1;
+  tracks.forEach(tr=>{
+    const hs=tr.items.map(i=>i.b.h), xs=tr.items.map(i=>i.b.cx), mh=mean(hs);
+    const score=tr.items.length*mh*(1+(Math.max(...xs)-Math.min(...xs))/Math.max(mh,0.02));
+    if(score>ws){ws=score;win=tr;}
+  });
+  frames.forEach(f=>{ f.lm=null; });
+  state.track=[];
+  if(win) win.items.forEach(i=>{ frames[i.k].lm=i.c; state.track.push({t:frames[i.k].t,cx:i.b.cx,cy:i.b.cy,h:i.b.h}); });
+}
 function applyLandmarks(lm){
   state.lastLm=lm||null;
-  if(!lm){ state.pts=[]; return false; }
-  const vis=i=>(lm[i]&&lm[i].visibility!==undefined)?lm[i].visibility:1;
+  if(!lm){ state.pts=[]; state.pts2=[]; return false; }
+  const vis=i=>lm[i]&&lm[i].v!==undefined?lm[i].v:1;
   const score=s=>SIDE_IDX[s].reduce((a,i)=>a+vis(i),0)/5;
   let side=state.side==='left'?'L':state.side==='right'?'R':null;
   if(!side){
@@ -861,8 +949,9 @@ function applyLandmarks(lm){
     state.dirAcc=state.dirAcc*0.85+(d>0?1:-1)*0.15;
     if(state.dirMode==='auto') state.autoDir=state.dirAcc>=0?1:-1;
   }
-  if(score(side)<0.3){ state.pts=[]; return false; }
+  if(score(side)<0.3){ state.pts=[]; state.pts2=[]; return false; }
   state.pts=SIDE_IDX[side].map(i=>({x:clamp01(lm[i].x),y:clamp01(lm[i].y)}));
+  state.pts2=OTHER_IDX[side].map(i=>({x:clamp01(lm[i].x),y:clamp01(lm[i].y)}));
   state.ptsSrc='pose';
   return true;
 }
@@ -874,12 +963,22 @@ function detectNow(force){
   state.lastDetT=video.currentTime;
   try{
     const res=landmarker.detect(video);
-    state.found=applyLandmarks(res&&res.landmarks&&res.landmarks[0]);
-  }catch(e){ state.found=false; state.pts=[]; }
+    state.found=applyLandmarks(pickCandidate(((res&&res.landmarks)||[]).map(toLm)));
+  }catch(e){ state.found=false; state.pts=[]; state.pts2=[]; }
   busy=false;
 }
 
 /* ---------- drawing ---------- */
+/* The other leg, drawn thinner in silver-blue so a swapped or drifting leg is easy to spot. */
+function drawLeg2(c,p,lw,r){
+  if(!p||p.length<2) return;
+  c.save(); c.lineCap='round'; c.lineJoin='round';
+  c.beginPath(); c.moveTo(p[0].x,p[0].y); for(let i=1;i<p.length;i++) c.lineTo(p[i].x,p[i].y);
+  c.strokeStyle='rgba(0,0,0,.55)'; c.lineWidth=lw*1.6; c.stroke();
+  c.strokeStyle='#A9C8F5'; c.lineWidth=lw*0.7; c.stroke();
+  p.forEach(q=>{ c.beginPath(); c.arc(q.x,q.y,r*0.7,0,Math.PI*2); c.fillStyle='#DCE8FA'; c.fill(); c.lineWidth=lw*.5; c.strokeStyle='rgba(0,0,0,.7)'; c.stroke(); });
+  c.restore();
+}
 function drawSkeleton(c,p,lw,r,activeIdx){
   c.save(); c.lineCap='round'; c.lineJoin='round';
   if(p.length>1){
@@ -898,6 +997,7 @@ function draw(){
   if(!state.ready) return;
   const w=canvas.width,h=canvas.height;
   try{ctx.drawImage(video,0,0,w,h);}catch(e){}
+  if(state.pts2&&state.pts2.length) drawLeg2(ctx,state.pts2.map(q=>({x:q.x*w,y:q.y*h})),w/230,w/110);
   drawSkeleton(ctx,state.pts.map(q=>({x:q.x*w,y:q.y*h})),w/230,w/110,state.active);
   if(state.active>=0) drawLoupe();
 }
@@ -919,7 +1019,7 @@ function drawLoupe(){
   ctx.moveTo(left+L/2,top+L/2-L*.12); ctx.lineTo(left+L/2,top+L/2+L*.12); ctx.stroke();
   ctx.restore();
 }
-function thumb(p,vw,vh,bg){
+function thumb(p,vw,vh,bg,p2){
   const xs=p.map(q=>q.x), ys=p.map(q=>q.y);
   const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
   let H=Math.max(y1-y0,(x1-x0)*4/3)*1.7, W=H*3/4;
@@ -931,10 +1031,11 @@ function thumb(p,vw,vh,bg){
   const g=c.getContext('2d');
   try{bg(g,{x:x,y:y,w:W,h:H});}catch(e){g.fillStyle='#0B0A08';g.fillRect(0,0,TW,TH);}
   const s=TW/W;
+  if(p2&&p2.length) drawLeg2(g,p2.map(q=>({x:(q.x-x)*s,y:(q.y-y)*s})),TW/60,TW/45);
   drawSkeleton(g,p.map(q=>({x:(q.x-x)*s,y:(q.y-y)*s})),TW/60,TW/45,-1);
   return c.toDataURL('image/jpeg',0.86);
 }
-const videoThumb=p=>thumb(p,state.vw,state.vh,(g,c)=>g.drawImage(video,c.x,c.y,c.w,c.h,0,0,TW,TH));
+const videoThumb=(p,p2)=>thumb(p,state.vw,state.vh,(g,c)=>g.drawImage(video,c.x,c.y,c.w,c.h,0,0,TW,TH),p2);
 
 /* ---------- language ---------- */
 function setPlayText(){ playBtn.textContent=video.paused?t('play'):t('pause'); }
@@ -1112,12 +1213,19 @@ function loop(){
   requestAnimationFrame(loop);
 }
 function seekTo(tm){
+  const target=Math.max(0,Math.min(video.duration||0,tm));
   return new Promise(res=>{
     let done=false;
-    const fin=()=>{ if(done) return; done=true; video.removeEventListener('seeked',fin); res(); };
-    video.addEventListener('seeked',fin);
-    video.currentTime=Math.max(0,Math.min(video.duration||0,tm));
-    setTimeout(fin,2000);
+    const fin=()=>{ if(done) return; done=true; video.removeEventListener('seeked',onSeek); res(); };
+    // After the seek, wait until the new frame is actually decoded so stills and Gemini crops match the time.
+    const onSeek=()=>{
+      if('requestVideoFrameCallback' in video){ video.requestVideoFrameCallback(()=>fin()); setTimeout(fin,250); }
+      else setTimeout(fin,60);
+    };
+    if(Math.abs((video.currentTime||0)-target)<1e-6&&!video.seeking){ onSeek(); return; }
+    video.addEventListener('seeked',onSeek);
+    video.currentTime=target;
+    setTimeout(fin,3000);
   });
 }
 
@@ -1180,11 +1288,12 @@ async function scanVideo(job){
     chk(job);
     const tm=(i+0.5)/fps;
     await seekTo(tm);
-    let lm=null;
-    try{ const r=landmarker.detect(video); lm=r&&r.landmarks&&r.landmarks[0]; }catch(e){}
-    frames.push({t:tm,lm:lm?lm.map(p=>({x:p.x,y:p.y,v:p.visibility==null?1:p.visibility})):null});
-    if(frames.length%3===1){ applyLandmarks(lm); draw(); setProg(t('pScan',i+1,n),i/n); }
+    let cands=[];
+    try{ const r=landmarker.detect(video); cands=((r&&r.landmarks)||[]).map(toLm); }catch(e){}
+    frames.push({t:tm,cands:cands,lm:null});
+    if(frames.length%3===1){ applyLandmarks(pickCandidate(cands)); draw(); setProg(t('pScan',i+1,n),i/n); }
   }
+  assignTrack(frames);
   return {frames:frames,dt:stride/fps,stride:stride};
 }
 function fillGaps(a,maxGap){
@@ -1218,6 +1327,11 @@ function findEvents(sc){
   if(state.dirMode==='auto'){ const sd=dirv.reduce((a,b)=>a+Math.sign(b),0); state.autoDir=sd>=0?1:-1; }
   const dir=curDir();
   fillGaps(low[0],3); fillGaps(low[1],3);
+  // High-speed video: smooth the foot height over ~10 ms so landmark jitter does not read as tiny steps.
+  const sw=Math.floor(Math.max(0,Math.round(0.012*slow/dt))/2);
+  if(sw>0) [0,1].forEach(s=>{ const a=low[s], o=a.slice();
+    for(let k=0;k<N;k++){ const w=[]; for(let j=k-sw;j<=k+sw;j++) if(j>=0&&j<N&&a[j]!=null) w.push(a[j]); if(a[k]!=null&&w.length) o[k]=median(w); }
+    low[s]=o; });
   const win=Math.max(4,Math.round(0.6*slow/dt));
   const ground=new Array(N).fill(null);
   for(let k=0;k<N;k++){
@@ -1242,13 +1356,22 @@ function findEvents(sc){
     const a=k; while(k+1<N&&contact[k+1]) k++;
     segs.push({a:a,b:k});
   }
-  const gapMax=dt/slow<0.012?3:dt/slow<0.03?2:1;
+  const gapMax=Math.max(1,Math.round(0.03*slow/dt));
   if(gapMax>1){
     const m=[]; segs.forEach(s=>{ const l=m[m.length-1]; if(l&&s.a-l.b<=gapMax) l.b=s.b; else m.push(s); }); segs=m;
   }
-  segs=segs.filter(s=>(s.b-s.a+1)*dt/slow<0.6);
+  segs=segs.filter(s=>{ const d=(s.b-s.a+1)*dt/slow; return d<0.6&&d>=0.05; });
   if(!segs.length) return {picked:[],rhythm:null};
   segs.forEach(s=>{ let c0=0; for(let k=s.a;k<=s.b;k++) if(stance[k]===0) c0++; s.mp=c0*2>=(s.b-s.a+1)?0:1; s.full=s.a>0&&s.b<N-1; });
+  // A real step: the hip travels over the planted foot. Standing still (set position in the blocks) is not a step.
+  segs=segs.filter(s=>{
+    const fa=F[s.a], fb=F[s.b]; if(!fa.lm||!fb.lm) return true;
+    const rel=f=>(f.lm[LMI.toe[s.mp]].x-f.lm[LMI.hip[s.mp]].x)*vw;
+    const span=s.b>s.a?Math.abs(rel(fb)-rel(fa)):0;
+    const realDur=(s.b-s.a+1)*dt/slow;
+    return span>=0.12*leg&&realDur>=0.05;
+  });
+  if(!segs.length) return {picked:[],rhythm:null};
   // Alternate left and right step by step, counting a missed step when a gap is unusually long.
   const gaps=[]; for(let i=1;i<segs.length;i++) gaps.push(segs[i].a-segs[i-1].a);
   const mg=median(gaps)||1; let par=0;
@@ -1273,7 +1396,7 @@ function findEvents(sc){
     }
     if(best&&best.k>s.a&&best.k<end) s.kd=best;
   });
-  const chain=(k,s)=>{ const f=F[k]; const ids=[LMI.sh[s],LMI.hip[s],LMI.knee[s],LMI.ank[s],LMI.toe[s]]; return {pts:ids.map(i=>({x:clamp01(f.lm[i].x),y:clamp01(f.lm[i].y)})),vis:mean(ids.map(i=>f.lm[i].v))}; };
+  const chain=(k,s)=>{ const f=F[k]; const ids=[LMI.sh[s],LMI.hip[s],LMI.knee[s],LMI.ank[s],LMI.toe[s]]; const o=1-s, oth=[LMI.hip[o],LMI.knee[o],LMI.ank[o],LMI.toe[o]]; const P=i=>({x:clamp01(f.lm[i].x),y:clamp01(f.lm[i].y)}); return {pts:ids.map(P),other:oth.map(P),vis:mean(ids.map(i=>f.lm[i].v))}; };
   const picked=[];
   const sides=state.side==='left'?['L']:state.side==='right'?['R']:['L','R'];
   sides.forEach(X=>{
@@ -1289,9 +1412,9 @@ function findEvents(sc){
     if(!best) return;
     const s=best.s;
     const td=chain(s.a,stance[s.a]), to=chain(s.b,stance[s.b]);
-    picked.push({label:'Touchdown',t:F[s.a].t,leg:'stance',side:X,pts:td.pts,lm:F[s.a].lm,contactMs:s.contactMs});
-    picked.push({label:'Toe-off',t:F[s.b].t,leg:'stance',side:X,pts:to.pts,lm:F[s.b].lm});
-    if(best.nx&&best.nx.kd){ const kd=best.nx.kd; picked.push({label:'Knee drive',t:F[kd.k].t,leg:'swing',side:X,pts:chain(kd.k,kd.s).pts,lm:F[kd.k].lm}); }
+    picked.push({label:'Touchdown',t:F[s.a].t,leg:'stance',side:X,pts:td.pts,other:td.other,lm:F[s.a].lm,contactMs:s.contactMs});
+    picked.push({label:'Toe-off',t:F[s.b].t,leg:'stance',side:X,pts:to.pts,other:to.other,lm:F[s.b].lm});
+    if(best.nx&&best.nx.kd){ const kd=best.nx.kd, kc=chain(kd.k,kd.s); picked.push({label:'Knee drive',t:F[kd.k].t,leg:'swing',side:X,pts:kc.pts,other:kc.other,lm:F[kd.k].lm}); }
   });
   const cL=segs.filter(s=>s.side==='L'&&s.contactMs).map(s=>s.contactMs), cR=segs.filter(s=>s.side==='R'&&s.contactMs).map(s=>s.contactMs);
   const fl=segs.filter(s=>s.flightMs!=null).map(s=>s.flightMs), st=segs.filter(s=>s.stepMs).map(s=>s.stepMs);
@@ -1349,7 +1472,7 @@ async function autoAnalyze(){
       const ev=findEvents(sc);
       state.rhythm=ev&&ev.rhythm&&ev.rhythm.steps>=2?ev.rhythm:null;
       events=ev?ev.picked:[];
-      if(!events.length&&hasGem) events=await gemFindFrames(job);
+      if(hasGem&&(!events.length||!state.rhythm)){ state.rhythm=null; events=await gemFindFrames(job); }
     } else {
       state.rhythm=null;
       events=await gemFindFrames(job);
@@ -1360,7 +1483,7 @@ async function autoAnalyze(){
     for(const e of events){
       chk(job); await seekTo(e.t);
       const box=e.lm?lmBox(e.lm):null;
-      shots.push({e:e,box:box,b64:box?grab(box,768):null,img:null});
+      shots.push({e:e,box:box,b64:box?grab(box,1024):null,img:null});
     }
     const results=new Array(shots.length).fill(null);
     if(hasGem){
@@ -1369,10 +1492,9 @@ async function autoAnalyze(){
       const worker=async()=>{
         while(next<shots.length){
           const i=next++; const sh=shots[i];
-          const leg=state.side==='left'?'left':state.side==='right'?'right':sh.e.leg;
           try{
-            results[i]=sh.box?await gemJoints({box:sh.box,b64:sh.b64,leg:leg,label:sh.e.label,signal:job.ctrl.signal})
-              :await (async()=>{ await seekTo(sh.e.t); return gemJointsAnywhere({leg:leg,label:sh.e.label,signal:job.ctrl.signal}); })();
+            results[i]=sh.box?await gemPose({box:sh.box,b64:sh.b64,label:sh.e.label,signal:job.ctrl.signal})
+              :await (async()=>{ await seekTo(sh.e.t); return gemPoseAnywhere({label:sh.e.label,signal:job.ctrl.signal}); })();
           }catch(err){ if(job.cancel) throw err; gemWarn=err.message; }
           done++; setProg(t('pGem',Math.min(done+1,shots.length),shots.length),done/shots.length);
         }
@@ -1380,19 +1502,35 @@ async function autoAnalyze(){
       // Frames without a pose-model crop need seeking, so run those one at a time.
       const parallel=shots.every(s=>s.box)?3:1;
       await Promise.all(Array.from({length:parallel},worker));
+      for(let i=0;i<shots.length;i++){
+        const sh=shots[i];
+        if(!sh.box||(results[i]&&!poseDisagrees(results[i],sh.e.lm))) continue;
+        chk(job);
+        try{
+          await seekTo(sh.e.t);
+          const g=await gemPoseAnywhere({label:sh.e.label,signal:job.ctrl.signal});
+          if(g){ results[i]=g; if(poseDisagrees(g,sh.e.lm)) sh.e.lm=null; }
+        }catch(err){ if(job.cancel) throw err; gemWarn=err.message; }
+      }
     }
     chk(job);
     const poses=[];
     for(let i=0;i<shots.length;i++){
       const sh=shots[i], g=results[i];
-      const pts=g?g.pts:sh.e.pts;
-      if(!pts) continue;
       if(g&&!sh.e.lm&&state.dirMode==='auto'&&(g.facing==='right'||g.facing==='left')) state.autoDir=g.facing==='right'?1:-1;
+      let pts=sh.e.pts, other=sh.e.other||[], src='pose', side=sh.e.side||null;
+      if(g){
+        const P=fusePose(g,sh.e.lm);
+        const mode=state.side==='left'?'left':state.side==='right'?'right':sh.e.leg;
+        const ch=chainFor(P,mode,sh.e.label,curDir());
+        pts=ch.pts; other=ch.other; src=P.fused?'fused':'gemini'; side=side||ch.side;
+      }
+      if(!pts) continue;
       await seekTo(sh.e.t);
-      const p=pts.map(q=>({x:q.x*state.vw,y:q.y*state.vh}));
-      const side=sh.e.side||(g&&g.leg==='left'?'L':g&&g.leg==='right'?'R':null);
-      poses.push({id:state.nextId++,label:sh.e.label,t:sh.e.t,p:p,img:videoThumb(p),demo:false,side:side,src:g?'gemini':'pose',contactMs:sh.e.contactMs||null});
-      state.pts=pts; state.ptsSrc=g?'gemini':'pose'; draw();
+      const px=q=>({x:q.x*state.vw,y:q.y*state.vh});
+      const p=pts.map(px), p2=other.map(px);
+      poses.push({id:state.nextId++,label:sh.e.label,t:sh.e.t,p:p,p2:p2,img:videoThumb(p,p2),demo:false,side:side,src:src,contactMs:sh.e.contactMs||null});
+      state.pts=pts; state.pts2=other; state.ptsSrc=src==='pose'?'pose':'gemini'; draw();
     }
     const dirNow=curDir();
     poses.forEach(ps=>{ ps.m=metrics(ps.p,dirNow); });
@@ -1428,12 +1566,14 @@ $('#gemFrame').addEventListener('click',async()=>{
   const job={cancel:false,ctrl:new AbortController()}; state.job=job; updateUI();
   setProg(t('pGem',1,1),null);
   try{
-    const leg=state.side==='left'?'left':state.side==='right'?'right':'auto';
-    const r=state.lastLm?await gemJoints({box:lmBox(state.lastLm),leg:leg,signal:job.ctrl.signal})
-      :await gemJointsAnywhere({leg:leg,signal:job.ctrl.signal});
+    const mode=state.side==='left'?'left':state.side==='right'?'right':'auto';
+    const lm=state.lastLm;
+    const r=lm?await gemPose({box:lmBox(lm),signal:job.ctrl.signal})
+      :await gemPoseAnywhere({signal:job.ctrl.signal});
     if(!r){ setProg(t('gemNone'),null,'warn'); return; }
-    state.pts=r.pts; state.ptsSrc='gemini'; state.found=true;
-    if(state.dirMode==='auto'&&(r.facing==='right'||r.facing==='left')&&!state.lastLm) state.autoDir=r.facing==='right'?1:-1;
+    if(state.dirMode==='auto'&&(r.facing==='right'||r.facing==='left')&&!lm) state.autoDir=r.facing==='right'?1:-1;
+    const P=fusePose(r,lm), ch=chainFor(P,mode,r.label,curDir());
+    state.pts=ch.pts; state.pts2=ch.other; state.ptsSrc='gemini'; state.found=true;
     if(CYCLE.indexOf(r.label)>=0||r.label==='Other'){ state.label=r.label; setSeg('label',r.label); }
     setProg(t('gemPlaced',t('lab.'+r.label)),1,'good');
   }catch(e){
@@ -1537,14 +1677,15 @@ function updateUI(){
   } else live.innerHTML='';
 }
 $('#undo').addEventListener('click',()=>{ state.pts.pop(); state.ptsSrc='manual'; draw(); updateUI(); });
-$('#clear').addEventListener('click',()=>{ state.pts=[]; state.ptsSrc=''; draw(); updateUI(); });
+$('#clear').addEventListener('click',()=>{ state.pts=[]; state.pts2=[]; state.ptsSrc=''; draw(); updateUI(); });
 
 $('#save').addEventListener('click',()=>{
   if(state.pts.length<JOINTS||!state.ready) return;
   if(!video.paused) video.pause();
   const p=state.pts.map(q=>({x:q.x*state.vw,y:q.y*state.vh}));
   const tm=video.currentTime||0, saved=state.label;
-  state.poses.push({id:state.nextId++,label:saved,t:tm,p:p,m:metrics(p,curDir()),img:videoThumb(p),demo:false,
+  const p2=(state.pts2||[]).map(q=>({x:q.x*state.vw,y:q.y*state.vh}));
+  state.poses.push({id:state.nextId++,label:saved,t:tm,p:p,p2:p2,m:metrics(p,curDir()),img:videoThumb(p,p2),demo:false,
     side:state.side==='left'?'L':state.side==='right'?'R':null,src:state.ptsSrc==='gemini'?'gemini':'manual'});
   state.poses.sort((a,b)=>a.t-b.t);
   state.coach=null;
@@ -1560,7 +1701,7 @@ function renderKino(){
   $('#kino-grid').innerHTML=state.poses.map(p=>{
     const lab=t('lab.'+p.label), src=p.demo?'demo':(p.src||'manual');
     return '<figure class="pose"><div class="imgwrap"><img alt="'+esc(t('poseAlt',lab,fx(p.t,3)))+'" src="'+p.img+'"><span class="tag">'+(p.demo?t('example')+' · ':'')+lab+(p.side?' · '+t('s'+p.side):'')+'</span>'+
-    (src==='gemini'?'<span class="src">✦ Gemini</span>':'')+'</div>'+
+    (src==='gemini'||src==='fused'?'<span class="src">✦ Gemini</span>':'')+'</div>'+
     '<figcaption><div class="row"><b class="num">'+fx(p.t,3)+' '+t('s')+'</b><button class="link" type="button" data-del="'+p.id+'">'+t('del')+'</button></div>'+
     '<dl class="mini"><div><dt>'+t('m.trunk')+'</dt><dd>'+fx(p.m.lean,0)+'°</dd></div><div><dt>'+t('m.thigh')+'</dt><dd>'+fx(p.m.thigh,0)+'°</dd></div><div><dt>'+t('m.knee')+'</dt><dd>'+fx(p.m.knee,0)+'°</dd></div><div><dt>'+t('m.ankle')+'</dt><dd>'+fx(p.m.ankle,0)+'°</dd></div><div><dt>'+t('m.foot')+'</dt><dd>'+fx(p.m.footAhead,2)+'</dd></div><div><dt>'+t('jointsBy')+'</dt><dd>'+t('src'+src)+'</dd></div></dl></figcaption></figure>';
   }).join('');

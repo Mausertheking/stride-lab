@@ -1,2 +1,5 @@
 original.html
 .DS_Store
+*.mov
+*.MOV
+*.mp4
